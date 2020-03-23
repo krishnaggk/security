@@ -1,7 +1,10 @@
 package com.amazon.opendistroforelasticsearch.security.securityconf.impl.v7;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -68,6 +71,8 @@ public class ConfigV7 {
         dynamic.auth_failure_listeners.listeners.putAll(c6.dynamic.auth_failure_listeners.getListeners().entrySet().stream().collect(Collectors.toMap(
                 entry -> entry.getKey(), 
                 entry -> new AuthFailureListener(entry.getValue()))));
+        dynamic.nodes_dn = new String[c6.dynamic.nodes_dn.length];
+        dynamic.nodes_dn = Arrays.copyOf(c6.dynamic.nodes_dn, c6.dynamic.nodes_dn.length);
     }
 
     @Override
@@ -93,11 +98,12 @@ public class ConfigV7 {
         public String hosts_resolver_mode = "ip-only";
         public String transport_userrname_attribute;
         public boolean do_not_fail_on_forbidden_empty;
-    
+        public String[] nodes_dn = new String[0];
+
         @Override
         public String toString() {
             return "Dynamic [filtered_alias_mode=" + filtered_alias_mode + ", kibana=" + kibana + ", http=" + http + ", authc=" + authc + ", authz="
-                    + authz + "]";
+                    + authz + ", nodes_dn=" + Arrays.toString(nodes_dn) + "]";
         }
     }
 

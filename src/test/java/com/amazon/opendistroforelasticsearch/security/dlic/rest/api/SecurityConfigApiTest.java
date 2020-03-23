@@ -51,6 +51,46 @@ public class SecurityConfigApiTest extends AbstractRestApiUnitTest {
         Assert.assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, response.getStatusCode());
         
 	}
+
+	@Test
+    public void testContained() throws Exception {
+        Settings settings = Settings.builder().put(ConfigConstants.OPENDISTRO_SECURITY_UNSUPPORTED_RESTAPI_ALLOW_SECURITYCONFIG_MODIFICATION, true).build();
+        setup(settings);
+
+        rh.keystore = "restapi/kirk-keystore.jks";
+        rh.sendAdminCertificate = true;
+
+
+        HttpResponse response = rh.executePutRequest("/_opendistro/_security/api/securityconfig/config",
+            FileHelper.loadFile( "restapi/securityconfig_op.json"));
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+
+        printConfig("Before");
+
+        patch("other");
+        printConfig("After 1");
+
+        patch("other-2");
+        printConfig("After 2");
+
+        patch("other-2");
+        printConfig("After 3");
+    }
+
+    private void patch(String value) throws Exception {
+        HttpResponse response = rh.executePatchRequest(
+            "/_opendistro/_security/api/securityconfig",
+            String.format("[{\"op\": \"add\",\"path\": \"/config/dynamic/nodes_dn/-\",\"value\": \"%s\"}]",
+                value));
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+    }
+
+    private void printConfig(String helper) throws Exception {
+        HttpResponse response = rh.executeGetRequest("/_opendistro/_security/api/securityconfig");
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        final String toPrint = String.format("GK [%s] -> %s", helper, response.getBody());
+        System.out.println(toPrint);
+    }
 	
 	@Test
 	public void testSecurityConfigApiWrite() throws Exception {

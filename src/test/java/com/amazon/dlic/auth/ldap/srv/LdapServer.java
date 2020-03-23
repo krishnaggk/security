@@ -121,6 +121,7 @@ final class LdapServer {
 
         ldapPort = SocketUtils.findAvailableTcpPort();
         ldapsPort = SocketUtils.findAvailableTcpPort();
+        System.out.println(String.format("GK: ldapPort=%d, ldapsPort=%d", ldapPort, ldapsPort));
 
         listenerConfigs.add(InMemoryListenerConfig.createLDAPConfig("ldap", null, ldapPort, serverSSLUtil.createSSLSocketFactory()));
         listenerConfigs.add(InMemoryListenerConfig.createLDAPSConfig("ldaps", ldapsPort, serverSSLUtil.createSSLServerSocketFactory()));

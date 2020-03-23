@@ -40,11 +40,16 @@ public class LdapBackendIntegTest extends SingleClusterTest {
 
     @BeforeClass
     public static void startLdapServer() throws Exception {
-        ldapServer = new EmbeddedLDAPServer();
-        ldapServer.start();
-        ldapServer.applyLdif("base.ldif");
-        ldapPort = ldapServer.getLdapPort();
-        ldapsPort = ldapServer.getLdapsPort();
+        try {
+            ldapServer = new EmbeddedLDAPServer();
+            ldapServer.start();
+            ldapServer.applyLdif("base.ldif");
+            ldapPort = ldapServer.getLdapPort();
+            ldapsPort = ldapServer.getLdapsPort();
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+            throw e;
+        }
     }
 
     @Override
