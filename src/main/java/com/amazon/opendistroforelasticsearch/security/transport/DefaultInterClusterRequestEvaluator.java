@@ -52,10 +52,17 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
     private final Logger log = LogManager.getLogger(this.getClass());
     private final String certOid;
     private final List<String> nodesDn;
+    private final boolean nodesDnHotReloadListEnabled;
 
     public DefaultInterClusterRequestEvaluator(final Settings settings) {
         this.certOid = settings.get(ConfigConstants.OPENDISTRO_SECURITY_CERT_OID, "1.2.3.4.5.5");
         this.nodesDn = settings.getAsList(ConfigConstants.OPENDISTRO_SECURITY_NODES_DN, Collections.emptyList());
+        this.nodesDnHotReloadListEnabled =
+            settings.getAsBoolean(ConfigConstants.OPENDISTRO_SECURITY_NODES_DN_HOT_RELOAD_LIST_ENALBED, false);
+    }
+
+    private List<String> getNodesDn() {
+        return this.nodesDn;
     }
 
     @Override
@@ -68,6 +75,8 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
             principals[0] = principal;
             principals[1] = principal.replace(" ","");
         }
+
+        List<String> nodesDn = getNodesDn();
         
         if (principals[0] != null && WildcardMatcher.matchAny(nodesDn, principals, true)) {
             

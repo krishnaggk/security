@@ -717,6 +717,7 @@
                         <target>1.8</target>
                         <showDeprecation>true</showDeprecation>
                         <showWarnings>true</showWarnings>
+
                         <compilerArgument>-Xlint:unchecked</compilerArgument>
                     </configuration>
                 </plugin>

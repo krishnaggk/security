@@ -865,7 +865,8 @@ public final class OpenDistroSecurityPlugin extends OpenDistroSecuritySSLPlugin 
     
             settings.add(Setting.simpleString(ConfigConstants.OPENDISTRO_SECURITY_CERT_INTERCLUSTER_REQUEST_EVALUATOR_CLASS, Property.NodeScope, Property.Filtered));
             settings.add(Setting.listSetting(ConfigConstants.OPENDISTRO_SECURITY_NODES_DN, Collections.emptyList(), Function.identity(), Property.NodeScope));//not filtered here
-    
+            settings.add(Setting.boolSetting(ConfigConstants.OPENDISTRO_SECURITY_NODES_DN_HOT_RELOAD_LIST_ENALBED, false, Property.NodeScope));//not filtered here
+
             settings.add(Setting.boolSetting(ConfigConstants.OPENDISTRO_SECURITY_ENABLE_SNAPSHOT_RESTORE_PRIVILEGE, ConfigConstants.OPENDISTRO_SECURITY_DEFAULT_ENABLE_SNAPSHOT_RESTORE_PRIVILEGE,
                     Property.NodeScope, Property.Filtered));
             settings.add(Setting.boolSetting(ConfigConstants.OPENDISTRO_SECURITY_CHECK_SNAPSHOT_RESTORE_WRITE_PRIVILEGES, ConfigConstants.OPENDISTRO_SECURITY_DEFAULT_CHECK_SNAPSHOT_RESTORE_WRITE_PRIVILEGES,
