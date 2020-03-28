@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.amazon.opendistroforelasticsearch.security.transport.NodesDnProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Client;
@@ -42,6 +43,8 @@ public class DynamicConfigFactory implements Initializable, ConfigurationChangeL
     private static SecurityDynamicConfiguration<ActionGroupsV7> staticActionGroups = SecurityDynamicConfiguration.empty();
     private static SecurityDynamicConfiguration<TenantV7> staticTenants = SecurityDynamicConfiguration.empty();
 
+    private static List<String> esYmlNodesDn = Collections.emptyList();
+
     static void resetStatics() {
         staticRoles = SecurityDynamicConfiguration.empty();
         staticActionGroups = SecurityDynamicConfiguration.empty();
@@ -62,6 +65,10 @@ public class DynamicConfigFactory implements Initializable, ConfigurationChangeL
         staticTenants = SecurityDynamicConfiguration.fromNode(staticTenantsJsonNode, CType.TENANTS, 2, 0, 0);
     }
 
+    private void loadStaticsFromEsYml(final Settings esSettings) {
+        esYmlNodesDn = esSettings.getAsList(ConfigConstants.OPENDISTRO_SECURITY_NODES_DN, Collections.emptyList());
+    }
+
     public final static SecurityDynamicConfiguration<?> addStatics(SecurityDynamicConfiguration<?> original) {
         if(original.getCType() == CType.ACTIONGROUPS && !staticActionGroups.getCEntries().isEmpty()) {
             original.add(staticActionGroups.deepClone());
@@ -77,7 +84,20 @@ public class DynamicConfigFactory implements Initializable, ConfigurationChangeL
 
         return original;
     }
-    
+
+    public static SecurityDynamicConfiguration<?> addEsYmlStatics(SecurityDynamicConfiguration<?> original) {
+        if(original.getCType() == CType.CONFIG) {
+            if(original.getImplementingClass() == ConfigV7.class) {
+                ConfigV7 config = getConfigV7(original);
+                config.dynamic.admin.nodes_dn.put(NodesDnProvider.ES_YML_NODES_DN_KEY, esYmlNodesDn);
+            } else {
+                ConfigV6 config = getConfigV6(original);
+                config.dynamic.admin.nodes_dn.put(NodesDnProvider.ES_YML_NODES_DN_KEY, esYmlNodesDn);
+            }
+        }
+        return original;
+    }
+
     protected final Logger log = LogManager.getLogger(this.getClass());
     private final ConfigurationRepository cr;
     private final AtomicBoolean initialized = new AtomicBoolean();
@@ -114,6 +134,8 @@ public class DynamicConfigFactory implements Initializable, ConfigurationChangeL
         } else {
             log.info("Static resources will not be loaded.");
         }
+
+        loadStaticsFromEsYml(esSettings);
         
         registerDCFListener(this.iab);
         this.cr.subscribeOnChange(this);

@@ -147,4 +147,20 @@ public class Migration {
         return rms7;
     }
 
+    public static <T> T getConfig(SecurityDynamicConfiguration<?> sdc, Class<T> klass) {
+        String key;
+
+        if (klass == ConfigV6.class) {
+            key = "opendistro_security";
+        } else if (klass == ConfigV7.class) {
+            key = "config";
+        } else {
+            throw new IllegalArgumentException("Unknown class encountered - " + klass.getName());
+        }
+
+        @SuppressWarnings("unchecked")
+        SecurityDynamicConfiguration<T> c = (SecurityDynamicConfiguration<T>) sdc;
+        return c.getCEntry(key);
+    }
+
 }

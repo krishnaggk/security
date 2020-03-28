@@ -1,11 +1,10 @@
 package com.amazon.opendistroforelasticsearch.security.securityconf.impl.v6;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -44,12 +43,12 @@ public class ConfigV6 {
         public String hosts_resolver_mode = "ip-only";
         public String transport_userrname_attribute;
         public boolean do_not_fail_on_forbidden_empty;
-        public String[] nodes_dn = new String[0];
-    
+        public Admin admin = new Admin();
+
         @Override
         public String toString() {
             return "Dynamic [filtered_alias_mode=" + filtered_alias_mode + ", kibana=" + kibana + ", http=" + http + ", authc=" + authc + ", authz="
-                    + authz + ", nodes_dn=" + Arrays.toString(nodes_dn) + "]";
+                    + authz + ", admin=" + admin + "]";
         }
     }
 
@@ -279,5 +278,25 @@ public class ConfigV6 {
         
         
     }
-   
+
+    public static class Admin {
+        public Map<String, List<String>> nodes_dn = new HashMap<>();
+
+        @Override
+        public String toString() {
+            return "Hidden [nodes_dn=" + nodes_dn + ']';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Admin admin = (Admin) o;
+            return nodes_dn.equals(admin.nodes_dn);
+        }
+    }
 }

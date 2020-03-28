@@ -17,21 +17,30 @@ package com.amazon.opendistroforelasticsearch.security.dlic.rest.api;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+import com.amazon.opendistroforelasticsearch.security.DefaultObjectMapper;
+import com.amazon.opendistroforelasticsearch.security.dlic.rest.support.Utils;
 import com.amazon.opendistroforelasticsearch.security.dlic.rest.validation.SecurityConfigValidator;
 import com.amazon.opendistroforelasticsearch.security.securityconf.impl.CType;
 import com.amazon.opendistroforelasticsearch.security.securityconf.impl.SecurityDynamicConfiguration;
+import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v6.ConfigV6;
+import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v7.ConfigV7;
+import com.amazon.opendistroforelasticsearch.security.support.SecurityJsonNode;
+import com.amazon.opendistroforelasticsearch.security.transport.NodesDnProvider;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.service.ClusterService;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestRequest.Method;
-import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.threadpool.ThreadPool;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -78,11 +87,34 @@ public class OpenDistroSecurityConfigAction extends PatchableResourceApiAction {
         final SecurityDynamicConfiguration<?> configuration = load(getConfigName(), true);
 
         filter(configuration);
+        filterAdminSectionIfApplicable(configuration);
 
         successResponse(channel, configuration);
     }
 
+    private void filterAdminSectionIfApplicable(SecurityDynamicConfiguration<?> configuration) {
+        if (!isSuperAdmin()) {
+            if(configuration.getImplementingClass() == ConfigV7.class) {
+                ConfigV7 config = getConfigV7(configuration);
+                config.dynamic.admin = null;
+            } else {
+                ConfigV6 config = getConfigV6(configuration);
+                config.dynamic.admin = null;
+            }
+        }
+    }
 
+    private static ConfigV6 getConfigV6(SecurityDynamicConfiguration<?> sdc) {
+        @SuppressWarnings("unchecked")
+        SecurityDynamicConfiguration<ConfigV6> c = (SecurityDynamicConfiguration<ConfigV6>) sdc;
+        return c.getCEntry("opendistro_security");
+    }
+
+    private static ConfigV7 getConfigV7(SecurityDynamicConfiguration<?> sdc) {
+        @SuppressWarnings("unchecked")
+        SecurityDynamicConfiguration<ConfigV7> c = (SecurityDynamicConfiguration<ConfigV7>) sdc;
+        return c.getCEntry("config");
+    }
 
     @Override
     protected void handleApiRequest(RestChannel channel, RestRequest request, Client client) throws IOException {
@@ -102,10 +134,92 @@ public class OpenDistroSecurityConfigAction extends PatchableResourceApiAction {
                 return;
             }
 
-            super.handlePut(channel, request, client, content);
+            final String name = request.param("name");
+
+            if (name == null || name.length() == 0) {
+                badRequestResponse(channel, "No " + getResourceName() + " specified.");
+                return;
+            }
+
+            final SecurityDynamicConfiguration<?> existingConfiguration = load(getConfigName(), false);
+
+            if (isHidden(existingConfiguration, name)) {
+                forbidden(channel, "Resource '"+ name +"' is not available.");
+                return;
+            }
+
+            if (!isReservedAndAccessible(existingConfiguration, name)) {
+                forbidden(channel, "Resource '"+ name +"' is read-only.");
+                return;
+            }
+
+            if (log.isTraceEnabled() && content != null) {
+                log.trace(content.toString());
+            }
+            JsonNode existingAsJsonNode = Utils.convertJsonToJackson(existingConfiguration, false);
+
+            if (!(existingAsJsonNode instanceof ObjectNode)) {
+                internalErrorResponse(channel, "Config " + getConfigName() + " is malformed");
+                return;
+            }
+
+            final SecurityJsonNode existingAsSecurityJsonNode = new SecurityJsonNode(existingAsJsonNode);
+            final SecurityJsonNode securityJsonNode = new SecurityJsonNode(content);
+
+            final List<String> existingEsYmlNodesDn = getNodesDnFromConfig(existingAsSecurityJsonNode);
+            final List<String> payloadEsYmlNodesDn = getNodesDnFromConfig(securityJsonNode);
+
+            log.debug("Comparing dynamic/admin/nodes_dn/{} values - Existing: {}, Payload: {}",
+                NodesDnProvider.ES_YML_NODES_DN_KEY, existingEsYmlNodesDn, payloadEsYmlNodesDn);
+
+            // We allow setting
+            if (null != payloadEsYmlNodesDn && !areListsEqualOrderInsensitive(existingEsYmlNodesDn, payloadEsYmlNodesDn)) {
+                forbidden(channel, "dynamic/admin/nodes_dn/" + NodesDnProvider.ES_YML_NODES_DN_KEY + " cannot be " +
+                    "modified");
+                return;
+            }
+
+            boolean existed = existingConfiguration.exists(name);
+            existingConfiguration.putCObject(name, DefaultObjectMapper.readTree(content, existingConfiguration.getImplementingClass()));
+
+            saveAnUpdateConfigs(client, request, getConfigName(), existingConfiguration, new OnSucessActionListener<IndexResponse>(channel) {
+
+                @Override
+                public void onResponse(IndexResponse response) {
+                    if (existed) {
+                        successResponse(channel, "'" + name + "' updated.");
+                    } else {
+                        createdResponse(channel, "'" + name + "' created.");
+                    }
+
+                }
+            });
+
         } else {
             notImplemented(channel, Method.PUT);
         }
+    }
+
+    private static List<String> getNodesDnFromConfig(SecurityJsonNode config) {
+        return config.get("dynamic").get("admin").get("nodes_dn").get(NodesDnProvider.ES_YML_NODES_DN_KEY).asList();
+    }
+
+    private static boolean areListsEqualOrderInsensitive(List<String> one, List<String> two) {
+        if (one == null && two == null) {
+            return true;
+        }
+
+        if (one == null || two == null || (one.size() != two.size())) {
+            return false;
+        }
+
+        one = new ArrayList<>(one);
+        two = new ArrayList<>(two);
+
+        Collections.sort(one);
+        Collections.sort(two);
+
+        return one.equals(two);
     }
 
     @Override
