@@ -1,7 +1,6 @@
 {
 
   "dynamic":{
-    "nodes_dn": ["something"],
     "filtered_alias_mode":"warn",
     "disable_rest_auth": false,
     "disable_intertransport_auth":false,

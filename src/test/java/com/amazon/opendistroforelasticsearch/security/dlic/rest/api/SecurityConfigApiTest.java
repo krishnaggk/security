@@ -80,8 +80,8 @@ public class SecurityConfigApiTest extends AbstractRestApiUnitTest {
     private void patch(String value) throws Exception {
         HttpResponse response = rh.executePatchRequest(
             "/_opendistro/_security/api/securityconfig",
-            String.format("[{\"op\": \"add\",\"path\": \"/config/dynamic/nodes_dn/-\",\"value\": \"%s\"}]",
-                value));
+            String.format("[{\"op\": \"add\",\"path\": \"/config/dynamic/nodes_dn/%s\",\"value\": \"%s\"}]",
+                value, value));
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
     }
 

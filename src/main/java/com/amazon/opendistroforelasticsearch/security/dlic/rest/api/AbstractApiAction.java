@@ -257,6 +257,7 @@ public abstract class AbstractApiAction extends BaseRestHandler {
 
 	protected final SecurityDynamicConfiguration<?> load(final CType config, boolean logComplianceEvent) {
 		SecurityDynamicConfiguration<?> loaded = cl.getConfigurationsFromIndex(Collections.singleton(config), logComplianceEvent).get(config).deepClone();
+		DynamicConfigFactory.addEsYmlStatics(loaded);
 		return DynamicConfigFactory.addStatics(loaded);
 	}
 
