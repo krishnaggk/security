@@ -96,7 +96,7 @@ public class Migration {
         }
         return c7;
     }
-    
+
     public static SecurityDynamicConfiguration<InternalUserV7>  migrateInternalUsers(SecurityDynamicConfiguration<InternalUserV6> r6is) throws MigrationException {
         final SecurityDynamicConfiguration<InternalUserV7> i7 = SecurityDynamicConfiguration.empty();
         i7.setCType(r6is.getCType());

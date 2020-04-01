@@ -14,6 +14,7 @@ import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v6.Inter
 import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v6.RoleMappingsV6;
 import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v6.RoleV6;
 import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v7.ActionGroupsV7;
+import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v7.SslConfigV7;
 import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v7.ConfigV7;
 import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v7.InternalUserV7;
 import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v7.RoleMappingsV7;
@@ -27,9 +28,10 @@ public enum CType {
     ACTIONGROUPS(toMap(0, List.class, 1, ActionGroupsV6.class, 2,
             ActionGroupsV7.class)),
     CONFIG(toMap(1, ConfigV6.class, 2, ConfigV7.class)),
-    ROLES(toMap(1, RoleV6.class, 2, RoleV7.class)), 
+    ROLES(toMap(1, RoleV6.class, 2, RoleV7.class)),
     ROLESMAPPING(toMap(1, RoleMappingsV6.class, 2, RoleMappingsV7.class)),
-    TENANTS(toMap(2, TenantV7.class));
+    TENANTS(toMap(2, TenantV7.class)),
+    SSLCONFIG(toMap(2, SslConfigV7.class));
 
     private Map<Integer, Class<?>> implementations;
 

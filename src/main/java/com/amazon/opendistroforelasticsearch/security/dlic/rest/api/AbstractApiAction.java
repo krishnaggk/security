@@ -207,7 +207,8 @@ public abstract class AbstractApiAction extends BaseRestHandler {
 		}
 
 		boolean existed = existingConfiguration.exists(name);
-		existingConfiguration.putCObject(name, DefaultObjectMapper.readTree(content, existingConfiguration.getImplementingClass()));
+		Object value = DefaultObjectMapper.readTree(content, existingConfiguration.getImplementingClass());
+		existingConfiguration.putCObject(name, value);
 
 		saveAnUpdateConfigs(client, request, getConfigName(), existingConfiguration, new OnSucessActionListener<IndexResponse>(channel) {
 
@@ -298,14 +299,22 @@ public abstract class AbstractApiAction extends BaseRestHandler {
 
 		configuration.removeStatic();
 
+		if (configuration.getSeqNo() >= 0) {
+			ir.setIfSeqNo(configuration.getSeqNo());
+		}
+
+		if (configuration.getPrimaryTerm() > 0) {
+			ir.setIfPrimaryTerm(configuration.getPrimaryTerm());
+		}
+
 		try {
 			client.index(ir.id(id)
 							.setRefreshPolicy(RefreshPolicy.IMMEDIATE)
-							.setIfSeqNo(configuration.getSeqNo())
-							.setIfPrimaryTerm(configuration.getPrimaryTerm())
 							.source(id, XContentHelper.toXContent(configuration, XContentType.JSON, false)),
 					new ConfigUpdatingActionListener<IndexResponse>(client, actionListener));
 		} catch (IOException e) {
+			throw ExceptionsHelper.convertToElastic(e);
+		} catch (Exception e) {
 			throw ExceptionsHelper.convertToElastic(e);
 		}
 	}

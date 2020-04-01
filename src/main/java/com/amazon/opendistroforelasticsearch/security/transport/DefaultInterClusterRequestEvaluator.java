@@ -58,7 +58,7 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
         this.certOid = settings.get(ConfigConstants.OPENDISTRO_SECURITY_CERT_OID, "1.2.3.4.5.5");
         this.nodesDn = settings.getAsList(ConfigConstants.OPENDISTRO_SECURITY_NODES_DN, Collections.emptyList());
         this.nodesDnHotReloadListEnabled =
-            settings.getAsBoolean(ConfigConstants.OPENDISTRO_SECURITY_NODES_DN_HOT_RELOAD_LIST_ENALBED, false);
+            settings.getAsBoolean(ConfigConstants.OPENDISTRO_SECURITY_RESTAPI_ALLOW_SSLCONFIG_MODIFICATION, false);
     }
 
     private List<String> getNodesDn() {

@@ -38,6 +38,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.amazon.opendistroforelasticsearch.security.securityconf.impl.Meta;
+import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v7.SslConfigV7;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.Version;
@@ -82,6 +84,25 @@ public class ConfigurationLoaderSecurity7 {
         log.debug("Index is: {}", securityIndex);
     }
 
+    public static SecurityDynamicConfiguration<SslConfigV7> createSslConfig() {
+        try {
+            // public static <T> SecurityDynamicConfiguration<T> fromJson(String json, CType ctype, int version, long
+            // seqNo, long primaryTerm) throws IOException {
+            SslConfigV7 sslConfigV7 = new SslConfigV7();
+
+            final SecurityDynamicConfiguration<SslConfigV7> c = SecurityDynamicConfiguration.empty();
+            c.setCType(CType.SSLCONFIG);
+            c.set_meta(new Meta());
+            c.get_meta().setConfig_version(2);
+            c.get_meta().setType("sslconfig");
+            c.putCEntry("0", new SslConfigV7());
+            return SecurityDynamicConfiguration.fromJson(DefaultObjectMapper.writeValueAsString(c, false),
+                CType.SSLCONFIG, 2, -1, -1);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     Map<CType, SecurityDynamicConfiguration<?>> load(final CType[] events, long timeout, TimeUnit timeUnit) throws InterruptedException, TimeoutException {
         final CountDownLatch latch = new CountDownLatch(events.length);
         final Map<CType, SecurityDynamicConfiguration<?>> rs = new HashMap<>(events.length);
@@ -124,6 +145,13 @@ public class ConfigurationLoaderSecurity7 {
                         latch.countDown();
                         return;
                     }
+                }
+
+                // SslConfig is recent addition, so load empty if not present
+                if(CType.fromString(id) == CType.SSLCONFIG) {
+                    rs.put(CType.fromString(id), createSslConfig());
+                    latch.countDown();
+                    return;
                 }
 
                 log.warn("No data for {} while retrieving configuration for {}  (index={} and type={})", id, Arrays.toString(events), securityIndex, type);
