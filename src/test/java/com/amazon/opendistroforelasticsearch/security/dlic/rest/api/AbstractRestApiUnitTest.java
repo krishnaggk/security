@@ -82,6 +82,10 @@ public abstract class AbstractRestApiUnitTest extends SingleClusterTest {
 	}
 
 	protected final void setupWithRestRoles() throws Exception {
+		setupWithRestRoles(null);
+    }
+
+	protected final void setupWithRestRoles(Settings nodeOverride) throws Exception {
 		Settings.Builder builder = Settings.builder();
 
 		builder.put("opendistro_security.ssl.http.enabled", true)
@@ -89,6 +93,9 @@ public abstract class AbstractRestApiUnitTest extends SingleClusterTest {
 						FileHelper.getAbsoluteFilePathFromClassPath("restapi/node-0-keystore.jks"))
 				.put("opendistro_security.ssl.http.truststore_filepath",
 						FileHelper.getAbsoluteFilePathFromClassPath("restapi/truststore.jks"));
+		if (null != nodeOverride) {
+			builder.put(nodeOverride);
+		}
 
 		builder.put("opendistro_security.restapi.roles_enabled.0", "opendistro_security_role_klingons");
 		builder.put("opendistro_security.restapi.roles_enabled.1", "opendistro_security_role_vulcans");

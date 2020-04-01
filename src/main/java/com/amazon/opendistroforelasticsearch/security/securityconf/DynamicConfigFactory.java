@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v7.SslConfigV7;
 import com.amazon.opendistroforelasticsearch.security.transport.NodesDnProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -86,14 +87,8 @@ public class DynamicConfigFactory implements Initializable, ConfigurationChangeL
     }
 
     public static SecurityDynamicConfiguration<?> addEsYmlStatics(SecurityDynamicConfiguration<?> original) {
-        if(original.getCType() == CType.CONFIG) {
-            if(original.getImplementingClass() == ConfigV7.class) {
-                ConfigV7 config = getConfigV7(original);
-                config.dynamic.admin.nodes_dn.put(NodesDnProvider.ES_YML_NODES_DN_KEY, esYmlNodesDn);
-            } else {
-                ConfigV6 config = getConfigV6(original);
-                config.dynamic.admin.nodes_dn.put(NodesDnProvider.ES_YML_NODES_DN_KEY, esYmlNodesDn);
-            }
+        if(original.getCType() == CType.SSLCONFIG) {
+            // TODO:
         }
         return original;
     }
@@ -106,8 +101,7 @@ public class DynamicConfigFactory implements Initializable, ConfigurationChangeL
     private final Path configPath;
     private final InternalAuthenticationBackend iab = new InternalAuthenticationBackend();
 
-    SecurityDynamicConfiguration<?> config;
-    
+
     public DynamicConfigFactory(ConfigurationRepository cr, final Settings esSettings, 
             final Path configPath, Client client, ThreadPool threadPool, ClusterInfoHolder cih) {
         super();
@@ -145,16 +139,18 @@ public class DynamicConfigFactory implements Initializable, ConfigurationChangeL
     public void onChange(Map<CType, SecurityDynamicConfiguration<?>> typeToConfig) {
 
         SecurityDynamicConfiguration<?> actionGroups = cr.getConfiguration(CType.ACTIONGROUPS);
-        config = cr.getConfiguration(CType.CONFIG);
+        SecurityDynamicConfiguration<?> config = cr.getConfiguration(CType.CONFIG);
+        SecurityDynamicConfiguration<?> sslConfig = cr.getConfiguration(CType.SSLCONFIG);
         SecurityDynamicConfiguration<?> internalusers = cr.getConfiguration(CType.INTERNALUSERS);
         SecurityDynamicConfiguration<?> roles = cr.getConfiguration(CType.ROLES);
         SecurityDynamicConfiguration<?> rolesmapping = cr.getConfiguration(CType.ROLESMAPPING);
         SecurityDynamicConfiguration<?> tenants = cr.getConfiguration(CType.TENANTS);
-        
+
         if(log.isDebugEnabled()) {
             String logmsg = "current config (because of "+typeToConfig.keySet()+")\n"+
             " actionGroups: "+actionGroups.getImplementingClass()+" with "+actionGroups.getCEntries().size()+" entries\n"+
             " config: "+config.getImplementingClass()+" with "+config.getCEntries().size()+" entries\n"+
+            " adminconfig: "+sslConfig.getImplementingClass()+" with "+sslConfig.getCEntries().size()+" entries\n"+
             " internalusers: "+internalusers.getImplementingClass()+" with "+internalusers.getCEntries().size()+" entries\n"+
             " roles: "+roles.getImplementingClass()+" with "+roles.getCEntries().size()+" entries\n"+
             " rolesmapping: "+rolesmapping.getImplementingClass()+" with "+rolesmapping.getCEntries().size()+" entries\n"+
@@ -199,10 +195,10 @@ public class DynamicConfigFactory implements Initializable, ConfigurationChangeL
 
                 log.debug("Static configuration loaded (total roles: {}/total action groups: {}/total tenants: {})", roles.getCEntries().size(), actionGroups.getCEntries().size(), tenants.getCEntries().size());
 
-            
+            SslConfigV7 sslConfigV7 = ((SecurityDynamicConfiguration<SslConfigV7>)sslConfig).getCEntry("config");
 
             //rebuild v7 Models
-            DynamicConfigModel dcm = new DynamicConfigModelV7(getConfigV7(config), esSettings, configPath, iab);
+            DynamicConfigModel dcm = new DynamicConfigModelV7(getConfigV7(config), sslConfigV7, esSettings, configPath , iab);
             InternalUsersModel ium = new InternalUsersModelV7((SecurityDynamicConfiguration<InternalUserV7>) internalusers);
             ConfigModel cm = new ConfigModelV7((SecurityDynamicConfiguration<RoleV7>) roles,(SecurityDynamicConfiguration<RoleMappingsV7>)rolesmapping, (SecurityDynamicConfiguration<ActionGroupsV7>)actionGroups, (SecurityDynamicConfiguration<TenantV7>) tenants,dcm, esSettings);
 

@@ -1,0 +1,6 @@
+{
+  "nodes_dn" : {
+    "test-1" : ["abc"],
+    "test-2" : ["xyz"]
+  }
+}

@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.amazon.opendistroforelasticsearch.security.securityconf.impl.v7.SslConfigV7;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentType;
 
@@ -37,6 +38,7 @@ import com.google.common.collect.Multimaps;
 public class DynamicConfigModelV7 extends DynamicConfigModel {
     
     private final ConfigV7 config;
+    private final SslConfigV7 sslConfigV7;
     private final Settings esSettings;
     private final Path configPath;
     private SortedSet<AuthDomain> restAuthDomains;
@@ -51,9 +53,11 @@ public class DynamicConfigModelV7 extends DynamicConfigModel {
     private List<ClientBlockRegistry<InetAddress>> ipClientBlockRegistries;
     private Multimap<String, ClientBlockRegistry<String>> authBackendClientBlockRegistries;
     
-    public DynamicConfigModelV7(ConfigV7 config, Settings esSettings, Path configPath, InternalAuthenticationBackend iab) {
+    public DynamicConfigModelV7(ConfigV7 config, SslConfigV7 sslConfigV7, Settings esSettings, Path configPath,
+        InternalAuthenticationBackend iab) {
         super();
         this.config = config;
+        this.sslConfigV7 = sslConfigV7;
         this.esSettings =  esSettings;
         this.configPath = configPath;
         this.iab = iab;
