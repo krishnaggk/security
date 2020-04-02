@@ -132,10 +132,10 @@ public class SslConfigApiTest extends AbstractRestApiUnitTest {
         Assert.assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, response.getStatusCode());
 
 
-        response = rh.executeDeleteRequest("/_opendistro/_security/ssl/config");
+        response = rh.executeDeleteRequest("/_opendistro/_security/ssl/config", credsHeader);
         Assert.assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, response.getStatusCode());
 
-        response = rh.executeDeleteRequest("/_opendistro/_security/ssl/config/0");
+        response = rh.executeDeleteRequest("/_opendistro/_security/ssl/config/0", credsHeader);
         Assert.assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, response.getStatusCode());
 
     }

@@ -4,16 +4,3 @@
     "test-2" : ["xyz"]
   }
 }
-
-ssl/certs
-ssl/config/sslconfig
-
-PUT ssl/config
-GET ssl/config
-PATCH ssl/config
-
-PUT nodes_dn/conn1
-PUT nodes_dn/
-
-securityconfig/config/dynamic/admin/ssl/nodes_dn
-
