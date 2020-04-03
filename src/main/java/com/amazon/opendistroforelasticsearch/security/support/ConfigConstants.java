@@ -119,6 +119,7 @@ public class ConfigConstants {
     public final static String CONFIGNAME_INTERNAL_USERS = "internalusers";
     public final static String CONFIGNAME_CONFIG = "config";
     public final static String CONFIGKEY_ACTION_GROUPS_PERMISSIONS = "permissions";
+    public final static String CONFIGKEY_NODESDN = "nodesdn";
     public final static String CONFIGKEY_READONLY = "readonly";
     public final static String CONFIGKEY_HIDDEN = "hidden";
 
@@ -199,6 +200,8 @@ public class ConfigConstants {
     public static final String OPENDISTRO_SECURITY_CERT_INTERCLUSTER_REQUEST_EVALUATOR_CLASS = "opendistro_security.cert.intercluster_request_evaluator_class";
     public static final String OPENDISTRO_SECURITY_ADVANCED_MODULES_ENABLED = "opendistro_security.advanced_modules_enabled";
     public static final String OPENDISTRO_SECURITY_NODES_DN = "opendistro_security.nodes_dn";
+    public static final String OPENDISTRO_SECURITY_NODES_DN_DYNAMIC_CONFIG_ENABLED = "opendistro_security.nodes_dn_dynamic_config_enabled";
+
     public static final String OPENDISTRO_SECURITY_DISABLED = "opendistro_security.disabled";
     public static final String OPENDISTRO_SECURITY_CACHE_TTL_MINUTES = "opendistro_security.cache.ttl_minutes";
     public static final String OPENDISTRO_SECURITY_ALLOW_UNSAFE_DEMOCERTIFICATES = "opendistro_security.allow_unsafe_democertificates";
@@ -239,6 +242,7 @@ public class ConfigConstants {
     public static final String OPENDISTRO_SECURITY_RESTAPI_ENDPOINTS_DISABLED = "opendistro_security.restapi.endpoints_disabled";
     public static final String OPENDISTRO_SECURITY_RESTAPI_PASSWORD_VALIDATION_REGEX = "opendistro_security.restapi.password_validation_regex";
     public static final String OPENDISTRO_SECURITY_RESTAPI_PASSWORD_VALIDATION_ERROR_MESSAGE = "opendistro_security.restapi.password_validation_error_message";
+
 
 
     // Illegal Opcodes from here on

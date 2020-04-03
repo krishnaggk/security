@@ -51,7 +51,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 public class ConfigHelper {
     
     private static final Logger LOGGER = LogManager.getLogger(ConfigHelper.class);
-    
+
     public static void uploadFile(Client tc, String filepath, String index, String id) throws Exception {
         LOGGER.info("Will update '" + id + "' with " + filepath);
         try (Reader reader = new FileReader(filepath)) {
