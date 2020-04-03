@@ -69,8 +69,8 @@ public class FlushCacheApiAction extends AbstractApiAction {
 
 		client.execute(
 				ConfigUpdateAction.INSTANCE,
-				new ConfigUpdateRequest(new String[] { "config", "roles", "rolesmapping", "internalusers", "actiongroups" }),
-				new ActionListener<ConfigUpdateResponse>() {
+				new ConfigUpdateRequest(IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.toArray(new String[0])),
+		new ActionListener<ConfigUpdateResponse>() {
 
 					@Override
 					public void onResponse(ConfigUpdateResponse ur) {

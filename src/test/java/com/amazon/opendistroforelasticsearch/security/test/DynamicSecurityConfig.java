@@ -48,6 +48,7 @@ public class DynamicSecurityConfig {
     private String securityRolesMapping = "roles_mapping.yml";
     private String securityInternalUsers = "internal_users.yml";
     private String securityActionGroups = "action_groups.yml";
+    private String nodesDn = "nodes_dn.yml";
     private String securityConfigAsYamlString = null;
 
     public String getSecurityIndexName() {
@@ -87,6 +88,11 @@ public class DynamicSecurityConfig {
         this.securityActionGroups = securityActionGroups;
         return this;
     }
+
+    public DynamicSecurityConfig setNodesDn(String nodesDn) {
+        this.nodesDn = nodesDn;
+        return this;
+    }
     
     public List<IndexRequest> getDynamicConfig(String folder) {
         
@@ -123,8 +129,13 @@ public class DynamicSecurityConfig {
         .id(ConfigConstants.CONFIGNAME_ROLES_MAPPING)
         .setRefreshPolicy(RefreshPolicy.IMMEDIATE)
         .source(ConfigConstants.CONFIGNAME_ROLES_MAPPING, FileHelper.readYamlContent(prefix+securityRolesMapping)));
- 
-        
+
+        ret.add(new IndexRequest(securityIndexName)
+            .type("security")
+            .id(ConfigConstants.CONFIGKEY_NODESDN)
+            .setRefreshPolicy(RefreshPolicy.IMMEDIATE)
+            .source(ConfigConstants.CONFIGKEY_NODESDN, FileHelper.readYamlContent(prefix+ nodesDn)));
+
         return Collections.unmodifiableList(ret);
     }
 

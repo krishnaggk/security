@@ -42,13 +42,13 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Currency;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import com.amazon.opendistroforelasticsearch.security.configuration.IndexBaseConfigurationRepository;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -493,7 +493,7 @@ public class OpenDistroSecurityAdmin {
 
             if(updateSettings != null) { 
                 Settings indexSettings = Settings.builder().put("index.number_of_replicas", updateSettings).build();                
-                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(new String[]{"config","roles","rolesmapping","internalusers","actiongroups"})).actionGet();                
+                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.toArray(new String[0]))).actionGet();
                 if(res.hasFailures()) {
                     System.out.println("ERR: Unabe to reload config due to "+res.failures());
                 }
@@ -504,7 +504,7 @@ public class OpenDistroSecurityAdmin {
             }
             
             if(reload) { 
-                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(new String[]{"config","roles","rolesmapping","internalusers","actiongroups"})).actionGet();                
+                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.toArray(new String[0]))).actionGet();
                 if(res.hasFailures()) {
                     System.out.println("ERR: Unabe to reload config due to "+res.failures());
                     return -1;
@@ -527,7 +527,7 @@ public class OpenDistroSecurityAdmin {
                 Settings indexSettings = Settings.builder()
                         .put("index.auto_expand_replicas", replicaAutoExpand?"0-all":"false")
                         .build();                
-                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(new String[]{"config","roles","rolesmapping","internalusers","actiongroups"})).actionGet();                
+                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.toArray(new String[0]))).actionGet();
                 if(res.hasFailures()) {
                     System.out.println("ERR: Unabe to reload config due to "+res.failures());
                 }
@@ -714,6 +714,7 @@ public class OpenDistroSecurityAdmin {
                 success = retrieveFile(tc, cd+"roles_mapping_"+date+".yml", index, "rolesmapping", legacy) && success;
                 success = retrieveFile(tc, cd+"internal_users_"+date+".yml", index, "internalusers", legacy) && success;
                 success = retrieveFile(tc, cd+"action_groups_"+date+".yml", index, "actiongroups", legacy) && success;
+                success = retrieveFile(tc, cd+"nodes_dn_"+date+".yml", index, "nodesdn", legacy) && success;
                 return (success?0:-1);
             }
             
@@ -727,7 +728,7 @@ public class OpenDistroSecurityAdmin {
                     return (-1);
                 }
                 
-                if(!Arrays.asList(new String[]{"config", "roles", "rolesmapping", "internalusers","actiongroups" }).contains(type)) {
+                if(!IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.contains(type)) {
                     System.out.println("ERR: Invalid type '"+type+"'");
                     return (-1);
                 }
@@ -746,15 +747,16 @@ public class OpenDistroSecurityAdmin {
             success = uploadFile(tc, cd+"roles_mapping.yml", index, "rolesmapping", legacy, resolveEnvVars) && success;
             success = uploadFile(tc, cd+"internal_users.yml", index, "internalusers", legacy, resolveEnvVars) && success;
             success = uploadFile(tc, cd+"action_groups.yml", index, "actiongroups", legacy, resolveEnvVars) && success;
-            
+            success = uploadFile(tc, cd+"nodes_dn.yml", index, "nodesdn", legacy, resolveEnvVars) && success;
+
             if(failFast && !success) {
                 System.out.println("ERR: cannot upload configuration, see errors above");
                 return -1;
             }
             
-            ConfigUpdateResponse cur = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(new String[]{"config","roles","rolesmapping","internalusers","actiongroups"})).actionGet();
+            ConfigUpdateResponse cur = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.toArray(new String[0]))).actionGet();
             
-            success = checkConfigUpdateResponse(cur, nodesInfo, 5) && success;
+            success = checkConfigUpdateResponse(cur, nodesInfo, 6) && success;
             
             System.out.println("Done with "+(success?"success":"failures"));
             return (success?0:-1);

@@ -50,6 +50,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.ElasticsearchException;
@@ -87,6 +88,11 @@ public class IndexBaseConfigurationRepository implements ConfigurationRepository
     private static final Logger LOGGER = LogManager.getLogger(IndexBaseConfigurationRepository.class);
     private static final Pattern DLS_PATTERN = Pattern.compile(".+\\.indices\\..+\\._dls_=.+", Pattern.DOTALL);
     private static final Pattern FLS_PATTERN = Pattern.compile(".+\\.indices\\..+\\._fls_\\.[0-9]+=.+", Pattern.DOTALL);
+
+    public static final List<String> EXISTING_CONFIG_TYPES = ImmutableList.of("config", "roles", "rolesmapping", "internalusers", "actiongroups");
+    public static final List<String> NEW_CONFIG_TYPES = ImmutableList.of("nodesdn");
+    public static final List<String> ALL_CONFIG_TYPES = ImmutableList.<String>builder().addAll(EXISTING_CONFIG_TYPES).addAll(NEW_CONFIG_TYPES).build();
+    public static final long EMPTY_DOCUMENT_VERSION = -1L;
 
     private final String opendistrosecurityIndex;
     private final Client client;
@@ -152,6 +158,7 @@ public class IndexBaseConfigurationRepository implements ConfigurationRepository
                                                 ConfigHelper.uploadFile(client, cd+"roles_mapping.yml", opendistrosecurityIndex, "rolesmapping");
                                                 ConfigHelper.uploadFile(client, cd+"internal_users.yml", opendistrosecurityIndex, "internalusers");
                                                 ConfigHelper.uploadFile(client, cd+"action_groups.yml", opendistrosecurityIndex, "actiongroups");
+                                                ConfigHelper.uploadFile(client, cd+"nodes_dn.yml", opendistrosecurityIndex, "nodesdn");
                                                 LOGGER.info("Default config applied");
                                             }
                                         }
@@ -190,7 +197,7 @@ public class IndexBaseConfigurationRepository implements ConfigurationRepository
                             while(true) {
                                 try {
                                     LOGGER.debug("Try to load config ...");
-                                    reloadConfiguration(Arrays.asList(new String[] { "config", "roles", "rolesmapping", "internalusers", "actiongroups"} ));
+                                    reloadConfiguration(ALL_CONFIG_TYPES);
                                     break;
                                 } catch (Exception e) {
                                     LOGGER.debug("Unable to load configuration due to {}", String.valueOf(ExceptionUtils.getRootCause(e)));
@@ -382,15 +389,15 @@ public class IndexBaseConfigurationRepository implements ConfigurationRepository
                 if(clusterService.state().metaData().index(this.opendistrosecurityIndex).mapping("config") != null) {
                     //legacy layout
                     LOGGER.debug("security index  exists and was created before ES 6 (legacy layout)");
-                    retVal.putAll(validate(legacycl.loadLegacy(configTypes.toArray(new String[0]), 5, TimeUnit.SECONDS), configTypes.size()));
+                    retVal.putAll(validate(legacycl.loadLegacy(configTypes.toArray(new String[0]), 5, TimeUnit.SECONDS), configTypes));
                 } else {
                     LOGGER.debug("security index  exists and was created with ES 6 (new layout)");
-                    retVal.putAll(validate(cl.load(configTypes.toArray(new String[0]), 5, TimeUnit.SECONDS), configTypes.size()));
+                    retVal.putAll(validate(cl.load(configTypes.toArray(new String[0]), 5, TimeUnit.SECONDS), configTypes));
                 }
             } else {
                 //wait (and use new layout)
                 LOGGER.debug("security index  not exists (yet)");
-                retVal.putAll(validate(cl.load(configTypes.toArray(new String[0]), 30, TimeUnit.SECONDS), configTypes.size()));
+                retVal.putAll(validate(cl.load(configTypes.toArray(new String[0]), 30, TimeUnit.SECONDS), configTypes));
             }
         } catch (Exception e) {
             throw new ElasticsearchException(e);
@@ -406,9 +413,10 @@ public class IndexBaseConfigurationRepository implements ConfigurationRepository
         return retVal;
     }
 
-    private Map<String, Tuple<Long, Settings>> validate(Map<String, Tuple<Long, Settings>> conf, int expectedSize) throws InvalidConfigException {
+    private Map<String, Tuple<Long, Settings>> validate(Map<String, Tuple<Long, Settings>> conf, Collection<String> expectedKeys) throws InvalidConfigException {
+        List<String> expectedMinList = expectedKeys.stream().filter(EXISTING_CONFIG_TYPES::contains).collect(Collectors.toList());
 
-        if (conf == null || conf.size() != expectedSize) {
+        if (conf == null || !(conf.size() >= expectedMinList.size() && conf.size() <= expectedKeys.size())) {
             throw new InvalidConfigException("Retrieved only partial configuration");
         }
 
