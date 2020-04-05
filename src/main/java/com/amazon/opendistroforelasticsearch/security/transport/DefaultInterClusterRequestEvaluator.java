@@ -96,13 +96,14 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
         }
 
         final List<String> nodesDn = getNodesDnToEvaluate();
-        
+
         if (principals[0] != null && WildcardMatcher.matchAny(nodesDn, principals, true)) {
             
             if (log.isTraceEnabled()) {
                 log.trace("Treat certificate with principal {} as other node because of it matches one of {}", Arrays.toString(principals), nodesDn);
             }
-            
+
+            log.trace("GK DN: Principal: {}, NodesDn: {}", principals[0], nodesDn);
             return true;
             
         } else {
@@ -110,6 +111,7 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
                 log.trace("Treat certificate with principal {} NOT as other node because we it does not matches one of {}", Arrays.toString(principals), nodesDn);
             }
         }
+
 
         try {
             final Collection<List<?>> ianList = peerCerts[0].getSubjectAlternativeNames();
@@ -148,6 +150,7 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
                 }
 
                 if (sb.indexOf("8::" + this.certOid) >= 0) {
+                    log.trace("GK OID: Principal: {}, NodesDn: {}", principals[0], nodesDn);
                     return true;
                 }
 
@@ -162,6 +165,7 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
             }
             throw new ElasticsearchException(e);
         }
+        log.trace("GK False: Principal: {}, NodesDn: {}", principals[0], nodesDn);
         return false;
     }
 

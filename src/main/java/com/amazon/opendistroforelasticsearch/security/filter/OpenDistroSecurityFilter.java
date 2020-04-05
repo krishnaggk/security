@@ -125,10 +125,11 @@ public class OpenDistroSecurityFilter implements ActionFilter {
             ActionListener<Response> listener, ActionFilterChain<Request, Response> chain) {
         try {
 
+
             if(threadContext.getTransient(ConfigConstants.OPENDISTRO_SECURITY_ORIGIN) == null) {
                 threadContext.putTransient(ConfigConstants.OPENDISTRO_SECURITY_ORIGIN, Origin.LOCAL.toString());
             }
-            
+
             if(complianceConfig != null && complianceConfig.isEnabled()) {
                 attachSourceFieldContext(request);
             }
@@ -140,6 +141,13 @@ public class OpenDistroSecurityFilter implements ActionFilter {
             final boolean confRequest = "true".equals(HeaderHelper.getSafeFromHeader(threadContext, ConfigConstants.OPENDISTRO_SECURITY_CONF_REQUEST_HEADER));
             final boolean passThroughRequest = action.startsWith("indices:admin/seq_no")
                     || action.equals(WhoAmIAction.NAME);
+            if (action.equals("cluster:monitor/nodes/info")) {
+                String origin = threadContext.getTransient(ConfigConstants.OPENDISTRO_SECURITY_ORIGIN);
+                boolean isDirect = HeaderHelper.isDirectRequest(threadContext);
+                String principal = threadContext.getTransient("_opendistro_security_ssl_transport_principal");
+                log.error("GK: State - [Origin:{}, Principal: {}, user: {}, isInterCluster: {}, isTrustedCluster: {}, passThrough: {}, direct: {}]",
+                    origin, principal, user, interClusterRequest, trustedClusterRequest, passThroughRequest, isDirect);
+            }
 
             final boolean internalRequest =
                     (interClusterRequest || HeaderHelper.isDirectRequest(threadContext))
@@ -231,7 +239,8 @@ public class OpenDistroSecurityFilter implements ActionFilter {
                     return;
                 }
 
-                log.error("No user found for "+ action+" from "+request.remoteAddress()+" "+threadContext.getTransient(ConfigConstants.OPENDISTRO_SECURITY_ORIGIN)+" via "+threadContext.getTransient(ConfigConstants.OPENDISTRO_SECURITY_CHANNEL_TYPE)+" "+threadContext.getHeaders());
+                String p = "[InterClusterRequest: " + interClusterRequest + ", TrustedClusterRequest: " + trustedClusterRequest + "] ";
+                log.error(p + "No user found for "+ action+" from "+request.remoteAddress()+" "+threadContext.getTransient(ConfigConstants.OPENDISTRO_SECURITY_ORIGIN)+" via "+threadContext.getTransient(ConfigConstants.OPENDISTRO_SECURITY_CHANNEL_TYPE)+" "+threadContext.getHeaders());
                 listener.onFailure(new ElasticsearchSecurityException("No user found for "+action, RestStatus.INTERNAL_SERVER_ERROR));
                 return;
             }
