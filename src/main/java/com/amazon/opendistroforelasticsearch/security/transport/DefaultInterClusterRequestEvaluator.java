@@ -103,7 +103,6 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
                 log.trace("Treat certificate with principal {} as other node because of it matches one of {}", Arrays.toString(principals), nodesDn);
             }
 
-            log.trace("GK DN: Principal: {}, NodesDn: {}", principals[0], nodesDn);
             return true;
             
         } else {
@@ -150,7 +149,6 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
                 }
 
                 if (sb.indexOf("8::" + this.certOid) >= 0) {
-                    log.trace("GK OID: Principal: {}, NodesDn: {}", principals[0], nodesDn);
                     return true;
                 }
 
@@ -165,7 +163,6 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
             }
             throw new ElasticsearchException(e);
         }
-        log.trace("GK False: Principal: {}, NodesDn: {}", principals[0], nodesDn);
         return false;
     }
 
