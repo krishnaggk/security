@@ -195,15 +195,16 @@ public class OpenDistroSecurityRequestHandler<T extends TransportRequest> extend
                     getThreadContext().putTransient(ConfigConstants.OPENDISTRO_SECURITY_ORIGIN, Origin.TRANSPORT.toString());
                 }
 
+                final String userHeader = getThreadContext().getHeader(ConfigConstants.OPENDISTRO_SECURITY_USER_HEADER);
+
                 //network intercluster request or cross search cluster request
                 if(HeaderHelper.isInterClusterRequest(getThreadContext())
                         || HeaderHelper.isTrustedClusterRequest(getThreadContext())) {
 
-                    final String userHeader = getThreadContext().getHeader(ConfigConstants.OPENDISTRO_SECURITY_USER_HEADER);
 
                     if(Strings.isNullOrEmpty(userHeader)) {
                         //user can be null when a node client wants connect
-                        //getThreadContext().putTransient(ConfigConstants.OPENDISTRO_SECURITY_USER, User.OPENDISTRO_SECURITY_INTERNAL);
+                        //getThreadContext().putTransient(ConfigConstants.OPENDISTRO_SECURITY_USER, new User(principal));
                     } else {
                         getThreadContext().putTransient(ConfigConstants.OPENDISTRO_SECURITY_USER, Objects.requireNonNull((User) Base64Helper.deserializeObject(userHeader)));
                     }
