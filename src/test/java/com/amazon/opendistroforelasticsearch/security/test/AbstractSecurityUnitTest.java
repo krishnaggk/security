@@ -211,6 +211,7 @@ public abstract class AbstractSecurityUnitTest {
             Assert.assertTrue(tc.get(new GetRequest(".opendistro_security","security","actiongroups")).actionGet().isExists());
             Assert.assertFalse(tc.get(new GetRequest(".opendistro_security","security","rolesmapping_xcvdnghtu165759i99465")).actionGet().isExists());
             Assert.assertTrue(tc.get(new GetRequest(".opendistro_security","security","config")).actionGet().isExists());
+            Assert.assertTrue(tc.get(new GetRequest(".opendistro_security","security","nodesdn")).actionGet().isExists());
         }
     }
 

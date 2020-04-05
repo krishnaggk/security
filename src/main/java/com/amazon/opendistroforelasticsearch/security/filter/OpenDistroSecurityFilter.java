@@ -145,8 +145,8 @@ public class OpenDistroSecurityFilter implements ActionFilter {
                 String origin = threadContext.getTransient(ConfigConstants.OPENDISTRO_SECURITY_ORIGIN);
                 boolean isDirect = HeaderHelper.isDirectRequest(threadContext);
                 String principal = threadContext.getTransient("_opendistro_security_ssl_transport_principal");
-                log.error("GK: State - [Origin:{}, Principal: {}, user: {}, isInterCluster: {}, isTrustedCluster: {}, passThrough: {}, direct: {}]",
-                    origin, principal, user, interClusterRequest, trustedClusterRequest, passThroughRequest, isDirect);
+                log.error("GK:[{}]  - [Origin:{}, Principal: {}, user: {}, isInterCluster: {}, isTrustedCluster: {}, passThrough: {}, direct: {}]",
+                    action, origin, principal, user, interClusterRequest, trustedClusterRequest, passThroughRequest, isDirect);
             }
 
             final boolean internalRequest =
