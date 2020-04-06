@@ -103,7 +103,7 @@ class ConfigurationLoader {
             @Override
             public void noData(String id) {
                 log.warn("No data for {} while retrieving configuration for {}  (index={})", id, Arrays.toString(events), opendistrosecurityIndex);
-                if (IndexBaseConfigurationRepository.NEW_CONFIG_TYPES.contains(id)) {
+                if (ConfigConstants.NEW_CONFIG_NAMES.contains(id)) {
                     rs.put(id, new Tuple<>(IndexBaseConfigurationRepository.EMPTY_DOCUMENT_VERSION, Settings.builder().build()));
                     latch.countDown();
                 }

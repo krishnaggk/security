@@ -71,7 +71,7 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
 
     public void subscribeForChanges(ConfigurationRepository configurationRepository) {
         if (this.dynamicNodesDnConfigEnabled) {
-            configurationRepository.subscribeOnChange(ConfigConstants.CONFIGKEY_NODESDN, this);
+            configurationRepository.subscribeOnChange(ConfigConstants.CONFIGNAME_NODES_DN, this);
         }
     }
 

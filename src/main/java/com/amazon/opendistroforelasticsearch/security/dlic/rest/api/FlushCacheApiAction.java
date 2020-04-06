@@ -25,6 +25,7 @@ import com.amazon.opendistroforelasticsearch.security.dlic.rest.validation.Abstr
 import com.amazon.opendistroforelasticsearch.security.dlic.rest.validation.NoOpValidator;
 import com.amazon.opendistroforelasticsearch.security.privileges.PrivilegesEvaluator;
 import com.amazon.opendistroforelasticsearch.security.ssl.transport.PrincipalExtractor;
+import com.amazon.opendistroforelasticsearch.security.support.ConfigConstants;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.service.ClusterService;
@@ -69,7 +70,7 @@ public class FlushCacheApiAction extends AbstractApiAction {
 
 		client.execute(
 				ConfigUpdateAction.INSTANCE,
-				new ConfigUpdateRequest(IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.toArray(new String[0])),
+				new ConfigUpdateRequest(ConfigConstants.ALL_CONFIG_NAMES.toArray(new String[0])),
 		new ActionListener<ConfigUpdateResponse>() {
 
 					@Override

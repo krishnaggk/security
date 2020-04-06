@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import com.amazon.opendistroforelasticsearch.security.configuration.IndexBaseConfigurationRepository;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -493,7 +492,7 @@ public class OpenDistroSecurityAdmin {
 
             if(updateSettings != null) { 
                 Settings indexSettings = Settings.builder().put("index.number_of_replicas", updateSettings).build();                
-                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.toArray(new String[0]))).actionGet();
+                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(ConfigConstants.ALL_CONFIG_NAMES.toArray(new String[0]))).actionGet();
                 if(res.hasFailures()) {
                     System.out.println("ERR: Unabe to reload config due to "+res.failures());
                 }
@@ -504,7 +503,7 @@ public class OpenDistroSecurityAdmin {
             }
             
             if(reload) { 
-                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.toArray(new String[0]))).actionGet();
+                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(ConfigConstants.ALL_CONFIG_NAMES.toArray(new String[0]))).actionGet();
                 if(res.hasFailures()) {
                     System.out.println("ERR: Unabe to reload config due to "+res.failures());
                     return -1;
@@ -527,7 +526,7 @@ public class OpenDistroSecurityAdmin {
                 Settings indexSettings = Settings.builder()
                         .put("index.auto_expand_replicas", replicaAutoExpand?"0-all":"false")
                         .build();                
-                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.toArray(new String[0]))).actionGet();
+                ConfigUpdateResponse res = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(ConfigConstants.ALL_CONFIG_NAMES.toArray(new String[0]))).actionGet();
                 if(res.hasFailures()) {
                     System.out.println("ERR: Unabe to reload config due to "+res.failures());
                 }
@@ -728,7 +727,7 @@ public class OpenDistroSecurityAdmin {
                     return (-1);
                 }
                 
-                if(!IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.contains(type)) {
+                if(!ConfigConstants.ALL_CONFIG_NAMES.contains(type)) {
                     System.out.println("ERR: Invalid type '"+type+"'");
                     return (-1);
                 }
@@ -754,7 +753,7 @@ public class OpenDistroSecurityAdmin {
                 return -1;
             }
             
-            ConfigUpdateResponse cur = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(IndexBaseConfigurationRepository.ALL_CONFIG_TYPES.toArray(new String[0]))).actionGet();
+            ConfigUpdateResponse cur = tc.execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(ConfigConstants.ALL_CONFIG_NAMES.toArray(new String[0]))).actionGet();
             
             success = checkConfigUpdateResponse(cur, nodesInfo, 6) && success;
             

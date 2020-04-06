@@ -29,7 +29,7 @@ public class NodesDnApiTest extends AbstractRestApiUnitTest {
         if (expectedStatus == HttpStatus.SC_OK) {
             JsonNode expected = asJsonNode(ImmutableMap.of(
                 "connection1", Collections.singletonList("cn=popeye"),
-                NodesDnApiAction.STATIC_NODES_DN_KEY, Collections.emptyList()));
+                NodesDnApiAction.STATIC_ES_YML_NODES_DN, Collections.emptyList()));
 
             JsonNode node = OBJECT_MAPPER.readTree(response.getBody());
             assertThat(node, equalTo(asJsonNode(expected)));
@@ -117,14 +117,14 @@ public class NodesDnApiTest extends AbstractRestApiUnitTest {
 
             final int expectedStatus = HttpStatus.SC_FORBIDDEN;
 
-            response = rh.executePutRequest("_opendistro/_security/api/nodesdn/" + NodesDnApiAction.STATIC_NODES_DN_KEY, "{\"nodes_dn\": [\"cn=popeye\"]}", nonAdminCredsHeader);
+            response = rh.executePutRequest("_opendistro/_security/api/nodesdn/" + NodesDnApiAction.STATIC_ES_YML_NODES_DN, "{\"nodes_dn\": [\"cn=popeye\"]}", nonAdminCredsHeader);
             assertThat(response.getBody(), response.getStatusCode(), equalTo(expectedStatus));
 
-            response = rh.executePatchRequest("/_opendistro/_security/api/nodesdn/" + NodesDnApiAction.STATIC_NODES_DN_KEY,
+            response = rh.executePatchRequest("/_opendistro/_security/api/nodesdn/" + NodesDnApiAction.STATIC_ES_YML_NODES_DN,
                 "[{ \"op\": \"add\", \"path\": \"/nodes_dn/-\", \"value\": \"bluto\" }]" , nonAdminCredsHeader);
             assertThat(response.getBody(), response.getStatusCode(), equalTo(expectedStatus));
 
-            response = rh.executeDeleteRequest("_opendistro/_security/api/nodesdn/" + NodesDnApiAction.STATIC_NODES_DN_KEY, nonAdminCredsHeader);
+            response = rh.executeDeleteRequest("_opendistro/_security/api/nodesdn/" + NodesDnApiAction.STATIC_ES_YML_NODES_DN, nonAdminCredsHeader);
             assertThat(response.getBody(), response.getStatusCode(), equalTo(expectedStatus));
         }
     }

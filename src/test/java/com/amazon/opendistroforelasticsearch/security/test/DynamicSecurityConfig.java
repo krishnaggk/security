@@ -135,9 +135,9 @@ public class DynamicSecurityConfig {
         final String fullFileName = DynamicSecurityConfig.class.getResource("/" + prefix + nodesDn).getFile();
         if (new File(fullFileName).exists()) {
             ret.add(new IndexRequest(securityIndexName).type("security")
-                .id(ConfigConstants.CONFIGKEY_NODESDN)
+                .id(ConfigConstants.CONFIGNAME_NODES_DN)
                 .setRefreshPolicy(RefreshPolicy.IMMEDIATE)
-                .source(ConfigConstants.CONFIGKEY_NODESDN, FileHelper.readYamlContent(prefix + nodesDn)));
+                .source(ConfigConstants.CONFIGNAME_NODES_DN, FileHelper.readYamlContent(prefix + nodesDn)));
         }
 
         return Collections.unmodifiableList(ret);

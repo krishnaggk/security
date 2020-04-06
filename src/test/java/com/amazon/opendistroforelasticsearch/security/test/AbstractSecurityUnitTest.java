@@ -193,7 +193,7 @@ public abstract class AbstractSecurityUnitTest {
             }
 
             ConfigUpdateResponse cur = tc
-                    .execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(ConfigConstants.CONFIG_NAMES.toArray(new String[0])))
+                    .execute(ConfigUpdateAction.INSTANCE, new ConfigUpdateRequest(ConfigConstants.ALL_CONFIG_NAMES.toArray(new String[0])))
                     .actionGet();
             Assert.assertFalse(cur.failures().toString(), cur.hasFailures());
             Assert.assertEquals(info.numNodes, cur.getNodes().size());

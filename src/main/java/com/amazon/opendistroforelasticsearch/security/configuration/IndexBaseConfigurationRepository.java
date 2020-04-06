@@ -32,10 +32,7 @@ package com.amazon.opendistroforelasticsearch.security.configuration;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.security.Security;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -50,7 +47,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.ElasticsearchException;
@@ -89,9 +85,6 @@ public class IndexBaseConfigurationRepository implements ConfigurationRepository
     private static final Pattern DLS_PATTERN = Pattern.compile(".+\\.indices\\..+\\._dls_=.+", Pattern.DOTALL);
     private static final Pattern FLS_PATTERN = Pattern.compile(".+\\.indices\\..+\\._fls_\\.[0-9]+=.+", Pattern.DOTALL);
 
-    public static final List<String> EXISTING_CONFIG_TYPES = ImmutableList.of("config", "roles", "rolesmapping", "internalusers", "actiongroups");
-    public static final List<String> NEW_CONFIG_TYPES = ImmutableList.of("nodesdn");
-    public static final List<String> ALL_CONFIG_TYPES = ImmutableList.<String>builder().addAll(EXISTING_CONFIG_TYPES).addAll(NEW_CONFIG_TYPES).build();
     public static final long EMPTY_DOCUMENT_VERSION = -1L;
 
     private final String opendistrosecurityIndex;
@@ -197,7 +190,7 @@ public class IndexBaseConfigurationRepository implements ConfigurationRepository
                             while(true) {
                                 try {
                                     LOGGER.debug("Try to load config ...");
-                                    reloadConfiguration(ALL_CONFIG_TYPES);
+                                    reloadConfiguration(ConfigConstants.ALL_CONFIG_NAMES);
                                     break;
                                 } catch (Exception e) {
                                     LOGGER.debug("Unable to load configuration due to {}", String.valueOf(ExceptionUtils.getRootCause(e)));
@@ -414,7 +407,7 @@ public class IndexBaseConfigurationRepository implements ConfigurationRepository
     }
 
     private Map<String, Tuple<Long, Settings>> validate(Map<String, Tuple<Long, Settings>> conf, Collection<String> expectedKeys) throws InvalidConfigException {
-        List<String> expectedMinList = expectedKeys.stream().filter(EXISTING_CONFIG_TYPES::contains).collect(Collectors.toList());
+        List<String> expectedMinList = expectedKeys.stream().filter(ConfigConstants.EXISTING_CONFIG_NAMES::contains).collect(Collectors.toList());
 
         if (conf == null || !(conf.size() >= expectedMinList.size() && conf.size() <= expectedKeys.size())) {
             throw new InvalidConfigException("Retrieved only partial configuration");

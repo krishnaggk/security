@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class NodesDnApiAction extends PatchableResourceApiAction {
-    public static final String STATIC_NODES_DN_KEY = "static_es_yml_nodes_dn";
+    public static final String STATIC_ES_YML_NODES_DN = "STATIC_ES_YML_NODES_DN";
     private final List<String> staticNodesDnFromEsYml;
 
     @Inject
@@ -75,7 +75,7 @@ public class NodesDnApiAction extends PatchableResourceApiAction {
 
     @Override
     protected boolean isReadOnlyAndAccessible(Settings settings, String name) {
-        if (STATIC_NODES_DN_KEY.equals(name)) {
+        if (STATIC_ES_YML_NODES_DN.equals(name)) {
             return false;
         }
         return super.isReadOnlyAndAccessible(settings, name);
@@ -99,7 +99,7 @@ public class NodesDnApiAction extends PatchableResourceApiAction {
             final Boolean showAll = request.paramAsBoolean("show_all", Boolean.FALSE);
             if (showAll) {
                 configurationSettings = Settings.builder()
-                    .putList(STATIC_NODES_DN_KEY, this.staticNodesDnFromEsYml)
+                    .putList(STATIC_ES_YML_NODES_DN, this.staticNodesDnFromEsYml)
                     .put(configurationSettings)
                     .build();
             }
@@ -107,8 +107,6 @@ public class NodesDnApiAction extends PatchableResourceApiAction {
                 new BytesRestResponse(RestStatus.OK, convertToJson(channel, configurationSettings)));
             return;
         }
-
-
 
         final Map<String, Object> con =
             new HashMap<>(Utils.convertJsonToxToStructuredMap(Settings.builder().put(configurationSettings).build()))
@@ -138,7 +136,7 @@ public class NodesDnApiAction extends PatchableResourceApiAction {
 
     @Override
     protected String getConfigName() {
-        return ConfigConstants.CONFIGKEY_NODESDN;
+        return ConfigConstants.CONFIGNAME_NODES_DN;
     }
 
     @Override

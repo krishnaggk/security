@@ -30,6 +30,8 @@
 
 package com.amazon.opendistroforelasticsearch.security.support;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -118,13 +120,16 @@ public class ConfigConstants {
     public final static String CONFIGNAME_ACTION_GROUPS = "actiongroups";
     public final static String CONFIGNAME_INTERNAL_USERS = "internalusers";
     public final static String CONFIGNAME_CONFIG = "config";
+    public final static String CONFIGNAME_NODES_DN = "nodesdn";
     public final static String CONFIGKEY_ACTION_GROUPS_PERMISSIONS = "permissions";
-    public final static String CONFIGKEY_NODESDN = "nodesdn";
     public final static String CONFIGKEY_READONLY = "readonly";
     public final static String CONFIGKEY_HIDDEN = "hidden";
 
-    public final static List<String> CONFIG_NAMES = Collections.unmodifiableList(Arrays.asList(new String[] {CONFIGNAME_ROLES, CONFIGNAME_ROLES_MAPPING,
-            CONFIGNAME_ACTION_GROUPS, CONFIGNAME_INTERNAL_USERS, CONFIGNAME_CONFIG}));
+    public static final List<String> EXISTING_CONFIG_NAMES = ImmutableList.of(CONFIGNAME_CONFIG, CONFIGNAME_ROLES, CONFIGNAME_ROLES_MAPPING,
+        CONFIGNAME_INTERNAL_USERS, CONFIGNAME_ACTION_GROUPS);
+    public static final List<String> NEW_CONFIG_NAMES = ImmutableList.of(CONFIGNAME_NODES_DN);
+    public static final List<String> ALL_CONFIG_NAMES = ImmutableList.<String>builder().addAll(EXISTING_CONFIG_NAMES).addAll(NEW_CONFIG_NAMES).build();
+
     public static final String OPENDISTRO_SECURITY_INTERCLUSTER_REQUEST_EVALUATOR_CLASS = "opendistro_security.cert.intercluster_request_evaluator_class";
     public static final String OPENDISTRO_SECURITY_ACTION_NAME = OPENDISTRO_SECURITY_CONFIG_PREFIX+"action_name";
 
@@ -226,7 +231,7 @@ public class ConfigConstants {
     public static final String OPENDISTRO_SECURITY_SSL_ONLY = "opendistro_security.ssl_only";
     public static final String OPENDISTRO_SECURITY_SSL_CERT_RELOAD_ENABLED = "opendistro_security.ssl_cert_reload_enabled";
     public static final String OPENDISTRO_SECURITY_DISABLE_ENVVAR_REPLACEMENT = "opendistro_security.disable_envvar_replacement";
-    
+
     public enum RolesMappingResolution {
         MAPPING_ONLY,
         BACKENDROLES_ONLY,
