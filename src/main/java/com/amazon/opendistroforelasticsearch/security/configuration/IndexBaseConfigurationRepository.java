@@ -158,7 +158,7 @@ public class IndexBaseConfigurationRepository implements ConfigurationRepository
                                                 ConfigHelper.uploadFile(client, cd+"roles_mapping.yml", opendistrosecurityIndex, "rolesmapping");
                                                 ConfigHelper.uploadFile(client, cd+"internal_users.yml", opendistrosecurityIndex, "internalusers");
                                                 ConfigHelper.uploadFile(client, cd+"action_groups.yml", opendistrosecurityIndex, "actiongroups");
-                                                ConfigHelper.uploadFile(client, cd+"nodes_dn.yml", opendistrosecurityIndex, "nodesdn");
+                                                ConfigHelper.uploadFile(client, cd+"nodes_dn.yml", opendistrosecurityIndex, "nodesdn", true);
                                                 LOGGER.info("Default config applied");
                                             }
                                         }
