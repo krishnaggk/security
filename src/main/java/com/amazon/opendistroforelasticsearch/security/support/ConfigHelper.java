@@ -30,11 +30,13 @@
 
 package com.amazon.opendistroforelasticsearch.security.support;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
+import com.amazon.opendistroforelasticsearch.security.securityconf.impl.Meta;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.index.IndexRequest;
@@ -54,13 +56,19 @@ import com.amazon.opendistroforelasticsearch.security.securityconf.impl.Security
 public class ConfigHelper {
     
     private static final Logger LOGGER = LogManager.getLogger(ConfigHelper.class);
-    
-    public static void uploadFile(Client tc, String filepath, String index, CType cType, int configVersion) throws Exception {
-        LOGGER.info("Will update '" + cType + "' with " + filepath);
 
-        ConfigHelper.fromYamlFile(filepath, cType, configVersion, 0, 0);
+    public static void uploadFile(Client tc, String filepath, String index, CType cType, int configVersion) throws Exception {
+        uploadFile(tc, filepath, index, cType, configVersion, false);
+    }
+
+    public static void uploadFile(Client tc, String filepath, String index, CType cType, int configVersion, boolean populateEmptyIfFileMissing) throws Exception {
+        LOGGER.info("Will update '" + cType + "' with " + filepath + " and populate it with empty doc if file missing and populateEmptyIfFileMissing=" + populateEmptyIfFileMissing);
+
+        if (!populateEmptyIfFileMissing) {
+            ConfigHelper.fromYamlFile(filepath, cType, configVersion, 0, 0);
+        }
         
-        try (Reader reader = new FileReader(filepath)) {
+        try (Reader reader = createReader(cType, configVersion, filepath, populateEmptyIfFileMissing)) {
 
             final String res = tc
                     .index(new IndexRequest(index).type(configVersion==1?"security":"_doc").id(cType.toLCString()).setRefreshPolicy(RefreshPolicy.IMMEDIATE)
@@ -70,11 +78,33 @@ public class ConfigHelper {
                 throw new Exception("   FAIL: Configuration for '" + cType.toLCString()
                         + "' failed for unknown reasons. Pls. consult logfile of elasticsearch");
             }
-        } catch (Exception e) {
-            throw e;
         }
     }
-    
+
+    public static Reader createReader(CType cType, int configVersion, String filepath, boolean populateEmptyIfFileMissing) throws Exception {
+        Reader reader;
+        if (!populateEmptyIfFileMissing || new File(filepath).exists()) {
+            reader = new FileReader(filepath);
+        } else {
+            reader = new StringReader(createEmptySdcYaml(cType, configVersion));
+        }
+        return reader;
+    }
+
+    public static SecurityDynamicConfiguration<?> createEmptySdc(CType cType, int configVersion) throws Exception {
+        // SecurityDynamicConfiguration<?> empty = SecurityDynamicConfiguration.fromJson("{}", cType, configVersion, -1, -1);
+        SecurityDynamicConfiguration<?> empty = SecurityDynamicConfiguration.empty();
+        empty.setCType(cType);
+        empty.set_meta(new Meta());
+        empty.get_meta().setConfig_version(configVersion);
+        empty.get_meta().setType(cType.toLCString());
+        return SecurityDynamicConfiguration.fromJson(DefaultObjectMapper.writeValueAsString(empty, false), cType, configVersion, -1, -1);
+    }
+
+    public static String createEmptySdcYaml(CType cType, int configVersion) throws Exception {
+        return DefaultObjectMapper.YAML_MAPPER.writeValueAsString(createEmptySdc(cType, configVersion));
+    }
+
     public static BytesReference readXContent(final Reader reader, final XContentType xContentType) throws IOException {
         BytesReference retVal;
         XContentParser parser = null;
