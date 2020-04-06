@@ -30,6 +30,8 @@
 
 package com.amazon.opendistroforelasticsearch.security.test;
 
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -130,11 +132,13 @@ public class DynamicSecurityConfig {
         .setRefreshPolicy(RefreshPolicy.IMMEDIATE)
         .source(ConfigConstants.CONFIGNAME_ROLES_MAPPING, FileHelper.readYamlContent(prefix+securityRolesMapping)));
 
-        ret.add(new IndexRequest(securityIndexName)
-            .type("security")
-            .id(ConfigConstants.CONFIGKEY_NODESDN)
-            .setRefreshPolicy(RefreshPolicy.IMMEDIATE)
-            .source(ConfigConstants.CONFIGKEY_NODESDN, FileHelper.readYamlContent(prefix+ nodesDn)));
+        final String fullFileName = DynamicSecurityConfig.class.getResource("/" + prefix + nodesDn).getFile();
+        if (new File(fullFileName).exists()) {
+            ret.add(new IndexRequest(securityIndexName).type("security")
+                .id(ConfigConstants.CONFIGKEY_NODESDN)
+                .setRefreshPolicy(RefreshPolicy.IMMEDIATE)
+                .source(ConfigConstants.CONFIGKEY_NODESDN, FileHelper.readYamlContent(prefix + nodesDn)));
+        }
 
         return Collections.unmodifiableList(ret);
     }
