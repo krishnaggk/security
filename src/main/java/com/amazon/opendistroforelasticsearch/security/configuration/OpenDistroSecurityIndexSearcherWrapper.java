@@ -39,6 +39,7 @@ import com.amazon.opendistroforelasticsearch.security.securityconf.ConfigModel;
 import com.amazon.opendistroforelasticsearch.security.securityconf.DynamicConfigFactory;
 import com.amazon.opendistroforelasticsearch.security.securityconf.DynamicConfigModel;
 import com.amazon.opendistroforelasticsearch.security.securityconf.InternalUsersModel;
+import com.amazon.opendistroforelasticsearch.security.securityconf.NodesDnModel;
 import com.amazon.opendistroforelasticsearch.security.support.WildcardMatcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -82,7 +83,7 @@ public class OpenDistroSecurityIndexSearcherWrapper extends IndexSearcherWrapper
     }
 
     @Override
-    public void onChanged(ConfigModel cm, DynamicConfigModel dcm, InternalUsersModel ium) {
+    public void onChanged(ConfigModel cm, DynamicConfigModel dcm, InternalUsersModel ium, NodesDnModel nm) {
         this.configModel = cm;
     }
 
