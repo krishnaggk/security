@@ -10,7 +10,9 @@ import org.apache.http.HttpStatus;
 import org.elasticsearch.common.settings.Settings;
 import org.junit.Test;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -23,13 +25,17 @@ public class NodesDnApiTest extends AbstractRestApiUnitTest {
         return OBJECT_MAPPER.readTree(OBJECT_MAPPER.writeValueAsString(t));
     }
 
+    private Map<String, List<String>> nodesDnEntry(String...nodesDn) {
+        return ImmutableMap.of("nodes_dn", Arrays.asList(nodesDn));
+    }
+
     private void testCrudScenarios(final int expectedStatus, final Header... headers) throws Exception {
         response = rh.executeGetRequest("_opendistro/_security/api/nodesdn?show_all=true", headers);
         assertThat(response.getStatusCode(), equalTo(expectedStatus));
         if (expectedStatus == HttpStatus.SC_OK) {
             JsonNode expected = asJsonNode(ImmutableMap.of(
-                "connection1", Collections.singletonList("cn=popeye"),
-                NodesDnApiAction.STATIC_ES_YML_NODES_DN, Collections.emptyList()));
+                "connection1", nodesDnEntry("cn=popeye"),
+                NodesDnApiAction.STATIC_ES_YML_NODES_DN, nodesDnEntry("CN=example.com")));
 
             JsonNode node = OBJECT_MAPPER.readTree(response.getBody());
             assertThat(node, equalTo(asJsonNode(expected)));
@@ -38,7 +44,7 @@ public class NodesDnApiTest extends AbstractRestApiUnitTest {
         response = rh.executeGetRequest("_opendistro/_security/api/nodesdn?show_all=false", headers);
         assertThat(response.getBody(), response.getStatusCode(), equalTo(expectedStatus));
         if (expectedStatus == HttpStatus.SC_OK) {
-            JsonNode expected = asJsonNode(ImmutableMap.of("connection1", Collections.singletonList("cn=popeye")));
+            JsonNode expected = asJsonNode(ImmutableMap.of("connection1", nodesDnEntry("cn=popeye")));
             JsonNode node = OBJECT_MAPPER.readTree(response.getBody());
             assertThat(node, equalTo(asJsonNode(expected)));
         }
@@ -46,7 +52,7 @@ public class NodesDnApiTest extends AbstractRestApiUnitTest {
         response = rh.executeGetRequest("_opendistro/_security/api/nodesdn", headers);
         assertThat(response.getBody(), response.getStatusCode(), equalTo(expectedStatus));
         if (expectedStatus == HttpStatus.SC_OK) {
-            JsonNode expected = asJsonNode(ImmutableMap.of("connection1", Collections.singletonList("cn=popeye")));
+            JsonNode expected = asJsonNode(ImmutableMap.of("connection1", nodesDnEntry("cn=popeye")));
             JsonNode node = OBJECT_MAPPER.readTree(response.getBody());
             assertThat(node, equalTo(asJsonNode(expected)));
         }
@@ -54,7 +60,7 @@ public class NodesDnApiTest extends AbstractRestApiUnitTest {
         response = rh.executeGetRequest("_opendistro/_security/api/nodesdn/connection1", headers);
         assertThat(response.getBody(), response.getStatusCode(), equalTo(expectedStatus));
         if (expectedStatus == HttpStatus.SC_OK) {
-            JsonNode expected = asJsonNode(ImmutableMap.of("connection1", Collections.singletonList("cn=popeye")));
+            JsonNode expected = asJsonNode(ImmutableMap.of("connection1", nodesDnEntry("cn=popeye")));
             JsonNode node = OBJECT_MAPPER.readTree(response.getBody());
             assertThat(node, equalTo(asJsonNode(expected)));
         }
@@ -83,7 +89,9 @@ public class NodesDnApiTest extends AbstractRestApiUnitTest {
 
     @Test
     public void testNodesDnApi() throws Exception {
-        Settings settings = Settings.builder().put(ConfigConstants.OPENDISTRO_SECURITY_NODES_DN_DYNAMIC_CONFIG_ENABLED, true).build();
+        Settings settings = Settings.builder().put(ConfigConstants.OPENDISTRO_SECURITY_NODES_DN_DYNAMIC_CONFIG_ENABLED, true)
+            .putList(ConfigConstants.OPENDISTRO_SECURITY_NODES_DN, "CN=example.com")
+            .build();
         setupWithRestRoles(settings);
 
         final Header adminCredsHeader = encodeBasicHeader("admin", "admin");

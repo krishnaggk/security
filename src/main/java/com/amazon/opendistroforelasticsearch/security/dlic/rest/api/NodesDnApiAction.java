@@ -99,7 +99,7 @@ public class NodesDnApiAction extends PatchableResourceApiAction {
             final Boolean showAll = request.paramAsBoolean("show_all", Boolean.FALSE);
             if (showAll) {
                 configurationSettings = Settings.builder()
-                    .putList(STATIC_ES_YML_NODES_DN, this.staticNodesDnFromEsYml)
+                    .putList(STATIC_ES_YML_NODES_DN + ".nodes_dn", this.staticNodesDnFromEsYml)
                     .put(configurationSettings)
                     .build();
             }
