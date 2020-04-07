@@ -92,13 +92,16 @@ public class ConfigHelper {
     }
 
     public static SecurityDynamicConfiguration<?> createEmptySdc(CType cType, int configVersion) throws Exception {
-        // SecurityDynamicConfiguration<?> empty = SecurityDynamicConfiguration.fromJson("{}", cType, configVersion, -1, -1);
         SecurityDynamicConfiguration<?> empty = SecurityDynamicConfiguration.empty();
-        empty.setCType(cType);
-        empty.set_meta(new Meta());
-        empty.get_meta().setConfig_version(configVersion);
-        empty.get_meta().setType(cType.toLCString());
-        return SecurityDynamicConfiguration.fromJson(DefaultObjectMapper.writeValueAsString(empty, false), cType, configVersion, -1, -1);
+        if (configVersion == 2) {
+            empty.setCType(cType);
+            empty.set_meta(new Meta());
+            empty.get_meta().setConfig_version(configVersion);
+            empty.get_meta().setType(cType.toLCString());
+        }
+        String string = DefaultObjectMapper.writeValueAsString(empty, false);
+        SecurityDynamicConfiguration<?> c = SecurityDynamicConfiguration.fromJson(string, cType, configVersion, -1, -1);
+        return c;
     }
 
     public static String createEmptySdcYaml(CType cType, int configVersion) throws Exception {

@@ -935,7 +935,7 @@ public class CrossClusterSearchTests extends AbstractSecurityUnitTest {
         HttpResponse ccs = rh1.executeGetRequest(uri, encodeBasicHeader("twitter", "nagilum"));
         System.out.println(ccs.getBody());
         assertThat(ccs.getStatusCode(), equalTo(HttpStatus.SC_INTERNAL_SERVER_ERROR));
-        assertThat(ccs.getBody(), containsString("no OID or opendistro_security.nodes_dn incorrect configured"));
+        assertThat(ccs.getBody(), containsString("no OID or security.nodes_dn incorrect configured"));
     }
 
     @Test
@@ -969,12 +969,12 @@ public class CrossClusterSearchTests extends AbstractSecurityUnitTest {
         final ClusterTransportClientSettings cluster1 = new ClusterTransportClientSettings();
         final ClusterTransportClientSettings cluster2 = getBaseSettingsWithDifferentCert();
 
-        setupCcs(new DynamicSecurityConfig(), cluster1, cluster2);
+        setupCcs(new DynamicSecurityConfig().setSecurityNodesDn("nodes_dn_empty.yml"), cluster1, cluster2);
 
         HttpResponse response = rh2.executePutRequest("_opendistro/_security/api/nodesdn/connection1",
             "{\"nodes_dn\": [\"CN=node-0.example.com,OU=SSL,O=Test,L=Test,C=DE\"]}",
             encodeBasicHeader("sarek", "sarek"));
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.SC_CREATED));
+        assertThat(response.getBody(), response.getStatusCode(), equalTo(HttpStatus.SC_CREATED));
 
         populateBaseData(cluster1, cluster2);
 

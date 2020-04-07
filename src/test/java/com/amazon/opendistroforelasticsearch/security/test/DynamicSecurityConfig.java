@@ -92,6 +92,11 @@ public class DynamicSecurityConfig {
         return this;
     }
 
+    public DynamicSecurityConfig setSecurityNodesDn(String nodesDn) {
+        this.securityNodesDn = nodesDn;
+        return this;
+    }
+
     public DynamicSecurityConfig setLegacy() {
         this.type = "security";
         this.legacyConfigFolder = "legacy/securityconfig_v6/";

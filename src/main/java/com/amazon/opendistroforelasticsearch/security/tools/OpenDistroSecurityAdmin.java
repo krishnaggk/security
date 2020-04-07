@@ -1229,7 +1229,7 @@ public class OpenDistroSecurityAdmin {
             success = uploadFile(tc, cd+"tenants.yml", index, "tenants", legacy, resolveEnvVars) && success;
         }
 
-        success = uploadFile(tc, cd+"nodesdn.yml", index, "nodesdn", legacy, resolveEnvVars, true) && success;
+        success = uploadFile(tc, cd+"nodes_dn.yml", index, "nodesdn", legacy, resolveEnvVars, true) && success;
 
         if(!success) {
             System.out.println("ERR: cannot upload configuration, see errors above");
@@ -1294,9 +1294,9 @@ public class OpenDistroSecurityAdmin {
         System.out.println("  done");
         
         System.out.println("-> Upload new configuration into Elasticsearch cluster");
-        
+
         int uploadResult = upload(tc, index, v7Dir.getAbsolutePath()+"/", false, nodesInfo, resolveEnvVars);
-        
+
         if(uploadResult == 0) {
             System.out.println("  done");
         }else {
