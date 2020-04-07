@@ -29,6 +29,19 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * This class implements CRUD operations to manage dynamic NodesDn. The primary usecase is targeted at cross-cluster where
+ * in node restart can be avoided by populating the coordinating cluster's nodes_dn values.
+ *
+ * The APIs are only accessible to SuperAdmin since the configuration controls the core application layer trust validation.
+ * By default the APIs are disabled and can be enabled by a YML setting - {@link ConfigConstants#OPENDISTRO_SECURITY_NODES_DN_DYNAMIC_CONFIG_ENABLED}
+ *
+ * The backing data is stored in {@link ConfigConstants#OPENDISTRO_SECURITY_CONFIG_INDEX_NAME} which is populated during bootstrap.
+ * For existing clusters, {@link com.amazon.opendistroforelasticsearch.security.tools.OpenDistroSecurityAdmin} tool can
+ * be used to populate the index.
+ *
+ * See {@link com.amazon.opendistroforelasticsearch.security.dlic.rest.api.NodesDnApiTest} for usage examples.
+ */
 public class NodesDnApiAction extends PatchableResourceApiAction {
     public static final String STATIC_ES_YML_NODES_DN = "STATIC_ES_YML_NODES_DN";
     private final List<String> staticNodesDnFromEsYml;

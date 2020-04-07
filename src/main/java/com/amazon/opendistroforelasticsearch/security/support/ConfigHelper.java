@@ -68,7 +68,7 @@ public class ConfigHelper {
             ConfigHelper.fromYamlFile(filepath, cType, configVersion, 0, 0);
         }
         
-        try (Reader reader = createReader(cType, configVersion, filepath, populateEmptyIfFileMissing)) {
+        try (Reader reader = createFileOrStringReader(cType, configVersion, filepath, populateEmptyIfFileMissing)) {
 
             final String res = tc
                     .index(new IndexRequest(index).type(configVersion==1?"security":"_doc").id(cType.toLCString()).setRefreshPolicy(RefreshPolicy.IMMEDIATE)
@@ -81,7 +81,7 @@ public class ConfigHelper {
         }
     }
 
-    public static Reader createReader(CType cType, int configVersion, String filepath, boolean populateEmptyIfFileMissing) throws Exception {
+    public static Reader createFileOrStringReader(CType cType, int configVersion, String filepath, boolean populateEmptyIfFileMissing) throws Exception {
         Reader reader;
         if (!populateEmptyIfFileMissing || new File(filepath).exists()) {
             reader = new FileReader(filepath);

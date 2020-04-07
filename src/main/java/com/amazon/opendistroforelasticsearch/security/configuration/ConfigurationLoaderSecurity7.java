@@ -128,6 +128,8 @@ public class ConfigurationLoaderSecurity7 {
                     }
                 }
 
+                // Since NODESDN is newly introduced data-type applying for existing clusters as well, we make it backward compatible by returning valid empty
+                // SecurityDynamicConfiguration.
                 if(cType == CType.NODESDN) {
                     try {
                         SecurityDynamicConfiguration<?> empty = ConfigHelper.createEmptySdc(cType, ConfigurationRepository.getDefaultConfigVersion());

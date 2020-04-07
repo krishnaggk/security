@@ -33,7 +33,6 @@ package com.amazon.opendistroforelasticsearch.security.tools;
 import java.io.ByteArrayInputStream;
 import java.io.Console;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
@@ -871,7 +870,7 @@ public class OpenDistroSecurityAdmin {
         
         System.out.println("Will update '"+type+"/" + id + "' with " + filepath+" "+(legacy?"(legacy mode)":""));
         
-        try (Reader reader = ConfigHelper.createReader(CType.fromString(_id), legacy ? 1 : 2, filepath, populateEmptyIfMissing)) {
+        try (Reader reader = ConfigHelper.createFileOrStringReader(CType.fromString(_id), legacy ? 1 : 2, filepath, populateEmptyIfMissing)) {
             final String content = CharStreams.toString(reader);
             final String res = tc
                     .index(new IndexRequest(index).type(type).id(id).setRefreshPolicy(RefreshPolicy.IMMEDIATE)
@@ -1271,7 +1270,7 @@ public class OpenDistroSecurityAdmin {
             SecurityDynamicConfiguration<RoleMappingsV7> rolesmappingV7 = Migration.migrateRoleMappings(rolesmappingV6);
             SecurityDynamicConfiguration<NodesDnV7> nodesDnV7 =
                 Migration.migrateNodesDn(SecurityDynamicConfiguration.fromNode(
-                    DefaultObjectMapper.YAML_MAPPER.readTree(ConfigHelper.createReader(CType.NODESDN, 1, new File(backupDir,"nodes_dn.yml").getAbsolutePath(), true)),
+                    DefaultObjectMapper.YAML_MAPPER.readTree(ConfigHelper.createFileOrStringReader(CType.NODESDN, 1, new File(backupDir,"nodes_dn.yml").getAbsolutePath(), true)),
                     CType.NODESDN, 1, 0, 0));
 
             DefaultObjectMapper.YAML_MAPPER.writeValue(new File(v7Dir, "/action_groups.yml"), actionGroupsV7);
