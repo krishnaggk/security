@@ -48,14 +48,13 @@ import org.elasticsearch.index.Index;
 import org.elasticsearch.index.IndexService;
 import org.elasticsearch.index.engine.EngineException;
 import org.elasticsearch.index.shard.IndexSearcherWrapper;
+import org.greenrobot.eventbus.Subscribe;
 
 import com.amazon.opendistroforelasticsearch.security.support.ConfigConstants;
 import com.amazon.opendistroforelasticsearch.security.support.HeaderHelper;
 import com.amazon.opendistroforelasticsearch.security.user.User;
 
-import com.google.common.eventbus.Subscribe;
-
-public class OpenDistroSecurityIndexSearcherWrapper extends IndexSearcherWrapper implements DynamicConfigFactory.DCFListener {
+public class OpenDistroSecurityIndexSearcherWrapper extends IndexSearcherWrapper {
 
     protected final Logger log = LogManager.getLogger(this.getClass());
     protected final ThreadContext threadContext;
