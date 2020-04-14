@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import com.amazon.opendistroforelasticsearch.security.support.ConfigHelper;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -713,7 +714,8 @@ public class OpenDistroSecurityAdmin {
                 success = retrieveFile(tc, cd+"roles_mapping_"+date+".yml", index, "rolesmapping", legacy) && success;
                 success = retrieveFile(tc, cd+"internal_users_"+date+".yml", index, "internalusers", legacy) && success;
                 success = retrieveFile(tc, cd+"action_groups_"+date+".yml", index, "actiongroups", legacy) && success;
-                success = retrieveFile(tc, cd+"nodes_dn_"+date+".yml", index, "nodesdn", legacy) && success;
+                final boolean populateFileIfEmpty = true;
+                success = retrieveFile(tc, cd+"nodes_dn_"+date+".yml", index, "nodesdn", legacy, populateFileIfEmpty) && success;
                 return (success?0:-1);
             }
             
@@ -746,7 +748,8 @@ public class OpenDistroSecurityAdmin {
             success = uploadFile(tc, cd+"roles_mapping.yml", index, "rolesmapping", legacy, resolveEnvVars) && success;
             success = uploadFile(tc, cd+"internal_users.yml", index, "internalusers", legacy, resolveEnvVars) && success;
             success = uploadFile(tc, cd+"action_groups.yml", index, "actiongroups", legacy, resolveEnvVars) && success;
-            success = uploadFile(tc, cd+"nodes_dn.yml", index, "nodesdn", legacy, resolveEnvVars) && success;
+            final boolean populateEmptyIfMissing = true;
+            success = uploadFile(tc, cd+"nodes_dn.yml", index, "nodesdn", legacy, resolveEnvVars, populateEmptyIfMissing) && success;
 
             if(failFast && !success) {
                 System.out.println("ERR: cannot upload configuration, see errors above");
@@ -800,7 +803,11 @@ public class OpenDistroSecurityAdmin {
     }
 
     private static boolean uploadFile(final Client tc, final String filepath, final String index, final String _id, final boolean legacy, boolean resolveEnvVars) {
-        
+        return uploadFile(tc, filepath, index, _id, legacy, resolveEnvVars, false);
+    }
+
+    private static boolean uploadFile(final Client tc, final String filepath, final String index, final String _id, final boolean legacy, final boolean resolveEnvVars,
+        final boolean populateEmptyIfMissing) {
         String type = "security";
         String id = _id;
                 
@@ -812,7 +819,7 @@ public class OpenDistroSecurityAdmin {
         System.out.println("Will update '"+type+"/" + id + "' with " + filepath+" "+(legacy?"(legacy mode)":""));
 
         try {
-            final String content = Files.asCharSource(new File(filepath), StandardCharsets.UTF_8).read();
+            final String content = ConfigHelper.fileContentOrEmptyIfMissing(filepath, populateEmptyIfMissing);
             final String res = tc
                     .index(new IndexRequest(index).type(type).id(id).setRefreshPolicy(RefreshPolicy.IMMEDIATE)
                             .source(_id, readXContent(resolveEnvVars?OpenDistroSecurityUtils.replaceEnvVars(content, Settings.EMPTY):content, XContentType.YAML))).actionGet().getId();
@@ -830,8 +837,12 @@ public class OpenDistroSecurityAdmin {
 
         return false;
     }
-    
+
     private static boolean retrieveFile(final Client tc, final String filepath, final String index, final String _id, final boolean legacy) {
+        return retrieveFile(tc, filepath, index, _id, legacy, false);
+    }
+
+    private static boolean retrieveFile(final Client tc, final String filepath, final String index, final String _id, final boolean legacy, final boolean populateIfEmpty) {
         
         String type = "security";
         String id = _id;
@@ -846,19 +857,21 @@ public class OpenDistroSecurityAdmin {
 
             final GetResponse response = tc.get(new GetRequest(index).type(type).id(id).refresh(true).realtime(false)).actionGet();
 
-            if (response.isExists()) {
-                if(response.isSourceEmpty()) {
-                    System.out.println("   FAIL: Configuration for '"+_id+"' failed because of empty source");
+            boolean isEmpty = !response.isExists() || response.isSourceEmpty();
+            String yaml;
+            if (isEmpty) {
+                if (populateIfEmpty) {
+                    yaml = ConfigHelper.emptyYamlConfig();
+                } else {
+                    System.out.println("   FAIL: Configuration for '" + _id + "' failed because of empty source");
                     return false;
                 }
-                
-                String yaml = convertToYaml(_id, response.getSourceAsBytesRef(), true);
-                writer.write(yaml);
-                System.out.println("   SUCC: Configuration for '"+_id+"' stored in "+filepath);
-                return true;
             } else {
-                System.out.println("   FAIL: Get configuration for '"+_id+"' because it does not exist");
+                yaml = convertToYaml(_id, response.getSourceAsBytesRef(), true);
             }
+            writer.write(yaml);
+            System.out.println("   SUCC: Configuration for '"+_id+"' stored in "+filepath);
+            return true;
         } catch (Exception e) {
             System.out.println("   FAIL: Get configuration for '"+_id+"' failed because of "+e.toString());
         }

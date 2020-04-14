@@ -823,8 +823,8 @@ public final class OpenDistroSecurityPlugin extends OpenDistroSecuritySSLPlugin 
             }
         });
 
-        // NOTE: We need to create InterClusterRequestEvaluator before creating ConfigurationRepository since the latter requires security index to be accessible which means
-        // communciation with other nodes is already up. However for the communication to be up, there needs to be trusted nodes_dn. Hence the base values from elasticsearch.yml
+        // NOTE: We need to create DefaultInterClusterRequestEvaluator before creating ConfigurationRepository since the latter requires security index to be accessible which means
+        // communication with other nodes is already up. However for the communication to be up, there needs to be trusted nodes_dn. Hence the base values from elasticsearch.yml
         // is used to first establish trust between same cluster nodes and there after dynamic config is loaded if enabled.
         if (DEFAULT_INTERCLUSTER_REQUEST_EVALUATOR_CLASS.equals(className)) {
             DefaultInterClusterRequestEvaluator e = (DefaultInterClusterRequestEvaluator) interClusterRequestEvaluator;

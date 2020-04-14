@@ -1,3 +1,18 @@
+/*
+ * Portions Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 package com.amazon.opendistroforelasticsearch.security.dlic.rest.api;
 
 import com.amazon.opendistroforelasticsearch.security.auditlog.AuditLog;
@@ -32,8 +47,22 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+/**
+ * This class implements CRUD operations to manage dynamic NodesDn. The primary usecase is targeted at cross-cluster where
+ * in node restart can be avoided by populating the coordinating cluster's nodes_dn values.
+ *
+ * The APIs are only accessible to SuperAdmin since the configuration controls the core application layer trust validation.
+ * By default the APIs are disabled and can be enabled by a YML setting - {@link ConfigConstants#OPENDISTRO_SECURITY_NODES_DN_DYNAMIC_CONFIG_ENABLED}
+ *
+ * The backing data is stored in {@link ConfigConstants#OPENDISTRO_SECURITY_CONFIG_INDEX_NAME} which is populated during bootstrap.
+ * For existing clusters, {@link com.amazon.opendistroforelasticsearch.security.tools.OpenDistroSecurityAdmin} tool can
+ * be used to populate the index.
+ *
+ * See {@link com.amazon.opendistroforelasticsearch.security.dlic.rest.api.NodesDnApiTest} for usage examples.
+ */
 public class NodesDnApiAction extends PatchableResourceApiAction {
     public static final String STATIC_ES_YML_NODES_DN = "STATIC_ES_YML_NODES_DN";
     private final List<String> staticNodesDnFromEsYml;
@@ -113,7 +142,7 @@ public class NodesDnApiAction extends PatchableResourceApiAction {
                 .entrySet()
                 .stream()
                 .filter(f->f.getKey() != null && f.getKey().equals(resourcename)) //copy keys
-                .collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()));
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
         if (!con.containsKey(resourcename)) {
             notFound(channel, "Resource '" + resourcename + "' not found.");
@@ -141,6 +170,6 @@ public class NodesDnApiAction extends PatchableResourceApiAction {
 
     @Override
     protected AbstractConfigurationValidator getValidator(RestRequest request, BytesReference ref, Object... params) {
-        return new NodesDnValidator(request, isSuperAdmin(), ref, this.settings, params);
+        return new NodesDnValidator(request, ref, this.settings, params);
     }
 }

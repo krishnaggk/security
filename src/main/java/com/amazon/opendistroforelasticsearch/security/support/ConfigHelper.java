@@ -36,7 +36,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 
+import com.google.common.io.Files;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.index.IndexRequest;
@@ -60,7 +62,7 @@ public class ConfigHelper {
 
     public static void uploadFile(Client tc, String filepath, String index, String id, boolean populateEmptyIfFileMissing) throws Exception {
         LOGGER.info("Will update '" + id + "' with " + filepath + " and populate it with empty doc if file missing and populateEmptyIfFileMissing=" + populateEmptyIfFileMissing);
-        try (Reader reader = ConfigHelper.createReader(filepath, populateEmptyIfFileMissing)) {
+        try (Reader reader = ConfigHelper.createFileOrStringReader(filepath, populateEmptyIfFileMissing)) {
 
             final String res = tc
                     .index(new IndexRequest(index).type("security").id(id).setRefreshPolicy(RefreshPolicy.IMMEDIATE)
@@ -73,18 +75,28 @@ public class ConfigHelper {
         }
     }
 
-    private static Reader createReader(String filepath, boolean populateEmptyIfFileMissing) throws Exception {
+    private static Reader createFileOrStringReader(String filepath, boolean populateEmptyIfFileMissing) throws Exception {
         Reader reader;
         if (populateEmptyIfFileMissing) {
             File file = new File(filepath);
-            reader = file.exists() ? new FileReader(filepath) : new StringReader("{}");
-
+            reader = file.exists() ? new FileReader(filepath) : new StringReader(ConfigHelper.emptyYamlConfig());
         } else {
             reader = new FileReader(filepath);
         }
         return reader;
     }
 
+    public static String fileContentOrEmptyIfMissing(final String filepath, final boolean populateEmptyIfMissing) throws Exception {
+        File file = new File(filepath);
+        if (!file.exists() && populateEmptyIfMissing) {
+            return ConfigHelper.emptyYamlConfig();
+        }
+        return Files.asCharSource(new File(filepath), StandardCharsets.UTF_8).read();
+    }
+
+    public static String emptyYamlConfig() {
+        return "{}";
+    }
 
     public static BytesReference readXContent(final Reader reader, final XContentType xContentType) throws IOException {
         BytesReference retVal;

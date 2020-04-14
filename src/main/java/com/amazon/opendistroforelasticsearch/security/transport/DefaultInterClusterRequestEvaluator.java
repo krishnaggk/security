@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
 
 import com.amazon.opendistroforelasticsearch.security.configuration.ConfigurationChangeListener;
 import com.amazon.opendistroforelasticsearch.security.configuration.ConfigurationRepository;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -75,8 +74,7 @@ public final class DefaultInterClusterRequestEvaluator implements InterClusterRe
         }
     }
 
-    @VisibleForTesting
-    List<String> getNodesDnToEvaluate() {
+    private List<String> getNodesDnToEvaluate() {
         ImmutableList.Builder<String> retVal = ImmutableList.<String>builder().addAll(staticNodesDnFromEsYml);
         if (dynamicNodesDnConfigEnabled) {
             retVal.addAll(dynamicNodesDn.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
